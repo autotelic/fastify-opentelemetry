@@ -1,0 +1,43 @@
+{
+  "name": "@autotelic/fastify-opentelemetry",
+  "version": "0.0.0",
+  "description": "A Fastify plugin for OpenTelemetry",
+  "main": "index.js",
+  "files": [],
+  "scripts": {
+    "fix": "npm run lint -- --fix",
+    "lint": "standard",
+    "test": "tap --100 -j1 -R classic test/*.test.js",
+    "validate": "npm run lint && npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/autotelic/fastify-opentelemetry.git"
+  },
+  "author": "Holden Whitehead <holden@autotelic.com>",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/autotelic/fastify-opentelemetry/issues"
+  },
+  "homepage": "https://github.com/autotelic/fastify-opentelemetry#readme",
+  "engines": {
+    "node": ">=10.16.0"
+  },
+  "devDependencies": {
+    "fastify": "^2.15.0",
+    "lint-staged": "^10.2.11",
+    "sinon": "^9.0.2",
+    "standard": "^14.3.4",
+    "tap": "^14.10.7"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^0.9.0",
+    "@opentelemetry/core": "^0.9.0",
+    "fastify-plugin": "^1.6.1"
+  },
+  "lint-staged": {
+    "*.{js,jsx}": [
+      "npm run fix"
+    ]
+  }
+}
