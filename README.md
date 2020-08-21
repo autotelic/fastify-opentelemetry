@@ -1,6 +1,6 @@
 ### Fastify OpenTelemetry
 
-A [Fastify] plugin that utilizes the [OpenTelemetry API] to provide request tracing.
+A [Fastify] plugin that uses the [OpenTelemetry API] to provide request tracing.
 
 #### Usage
 ```sh
@@ -74,9 +74,9 @@ fastify.listen(3000, (err, address) => {
 This plugin leaves all tracer configuration to the [OpenTelemetry API]. The tracer and propagation method are pulled in from the global tracer provider and global propagator, respectively. This allows the config for the plugin itself to be minimal.
 
 The plugin accepts the the following configuration properties:
-  - `serviceName`: `string` - This will be used for the naming of the tracer and spans (not required, but recommended).
+  - `serviceName`: `string` - Used for naming the tracer and spans (not required, but recommended).
   - `exposeApi` : `boolean` - Used to prevent the plugin from decorating the request. By default the request will be decorated (i.e. defaults to `true`).
-  - `formatSpanName` : `(serviceName, request.raw) => string` - This allows for custom formatting of the span name. The default format is ``` `${serviceName} - ${rawReq.method} - ${rawReq.url}` ```.
+  - `formatSpanName` : `(serviceName, request.raw) => string` - Custom formatter for the span name. The default format is ``` `${serviceName} - ${rawReq.method} - ${rawReq.url}` ```.
 
 ##### Request Decorator
 
@@ -99,7 +99,7 @@ This plugin decorates the request with an `openTelemetry` function that returns 
 
 ##### Hooks
 
-This plugin applies the following Fastify hooks:
+This plugin registers the following Fastify hooks:
 
  - `onRequest`: Start the span.
  - `onReply`: Stop the span.
