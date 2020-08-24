@@ -136,5 +136,6 @@ function openTelemetryPlugin (fastify, opts = {}, next) {
 }
 
 module.exports = fp(openTelemetryPlugin, {
+  fastify: '2.x - 3.x',
   name: 'fastify-opentelemetry'
 })
