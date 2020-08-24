@@ -2,7 +2,7 @@
 require('./opentelemetry')
 
 const fastify = require('fastify')
-const fastifyOpentelemetry = require('../index.js')
+const fastifyOpentelemetry = require('../')
 
 const app = fastify()
 
