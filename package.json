@@ -24,7 +24,7 @@
     "tracing"
   ],
   "author": "Holden Whitehead <holden@autotelic.com>",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/autotelic/fastify-opentelemetry/issues"
   },
