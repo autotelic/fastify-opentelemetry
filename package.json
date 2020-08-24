@@ -5,6 +5,7 @@
   "main": "index.js",
   "files": [],
   "scripts": {
+    "dev": "node example/index.js",
     "fix": "npm run lint -- --fix",
     "lint": "standard",
     "test": "tap --100 -j1 -R classic test/*.test.js",
@@ -24,16 +25,17 @@
     "node": ">=10.16.0"
   },
   "devDependencies": {
-    "fastify": "^2.15.0",
+    "@opentelemetry/tracing": "^0.10.2",
+    "fastify": "^3.2.1",
     "lint-staged": "^10.2.11",
     "sinon": "^9.0.2",
     "standard": "^14.3.4",
     "tap": "^14.10.7"
   },
   "dependencies": {
-    "@opentelemetry/api": "^0.9.0",
-    "@opentelemetry/core": "^0.9.0",
-    "fastify-plugin": "^1.6.1"
+    "@opentelemetry/api": "^0.10.2",
+    "@opentelemetry/core": "^0.10.2",
+    "fastify-plugin": "^2.3.2"
   },
   "lint-staged": {
     "*.{js,jsx}": [

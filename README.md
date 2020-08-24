@@ -67,6 +67,12 @@ fastify.listen(3000, (err, address) => {
 })
 ```
 
+See [/example](./example/index.js) for a working example app. To run the example app locally, `npm i` and then run:
+
+```sh
+npm run dev
+```
+
 #### API
 
 ##### Configuration
