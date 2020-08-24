@@ -15,6 +15,14 @@
     "type": "git",
     "url": "git+https://github.com/autotelic/fastify-opentelemetry.git"
   },
+  "keywords": [
+    "fastify",
+    "opentelemetry",
+    "metrics",
+    "monitoring",
+    "plugin",
+    "tracing"
+  ],
   "author": "Holden Whitehead <holden@autotelic.com>",
   "license": "UNLICENSED",
   "bugs": {
