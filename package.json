@@ -1,6 +1,6 @@
 {
   "name": "@autotelic/fastify-opentelemetry",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "A Fastify plugin for OpenTelemetry",
   "main": "index.js",
   "files": [],
