@@ -4,9 +4,10 @@ const {
   defaultGetter,
   defaultSetter,
   propagation,
-  trace
+  trace,
+  getActiveSpan,
+  setActiveSpan
 } = require('@opentelemetry/api')
-const { getActiveSpan, setActiveSpan } = require('@opentelemetry/core')
 
 const { name: moduleName, version: moduleVersion } = require('./package.json')
 
