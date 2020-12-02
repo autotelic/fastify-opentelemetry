@@ -114,7 +114,7 @@ This plugin registers the following Fastify hooks:
 
 [Fastify]: https://fastify.io
 [OpenTelemetry API]: https://github.com/open-telemetry/opentelemetry-js/tree/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-api
-[`Context`]:https://github.com/open-telemetry/opentelemetry-js/blob/packages/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/opentelemetry-context-base/src/context.ts
+[`Context`]:https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-context-base/src/context.ts
 [`Propagation.extract`]:https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-api/src/api/propagation.ts#L90
 [`Propagation.inject`]: https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-api/src/api/propagation.ts#L75
 [`Span`]: https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-tracing/src/Span.ts
