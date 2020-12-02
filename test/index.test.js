@@ -1,7 +1,13 @@
 const { test } = require('tap')
 const { resetHistory, stub } = require('sinon')
-const { Context, CanonicalCode, defaultGetter, defaultSetter } = require('@opentelemetry/api')
-const { getActiveSpan, setActiveSpan } = require('@opentelemetry/core')
+const {
+  ROOT_CONTEXT,
+  CanonicalCode,
+  defaultGetter,
+  defaultSetter,
+  getActiveSpan,
+  setActiveSpan
+} = require('@opentelemetry/api')
 
 const {
   STUB_SPAN,
@@ -129,7 +135,7 @@ test('should warn if serviceName is not provided', async ({ is, teardown }) => {
 })
 
 test('should be able to access context, activeSpan, extract, inject, and tracer via the request decorator', async ({ is, teardown }) => {
-  const dummyContext = setActiveSpan(Context.ROOT_CONTEXT, STUB_SPAN)
+  const dummyContext = setActiveSpan(ROOT_CONTEXT, STUB_SPAN)
   const replyHeaders = { foo: 'bar' }
   const routeHandler = (request, reply) => {
     const {
