@@ -8,7 +8,19 @@ const app = fastify()
 
 app.register(fastifyOpentelemetry, { serviceName: 'basic-example' })
 
-app.get('/', (request, reply) => {
+app.get('/', {}, async (request, reply) => {
+  const {
+    activeSpan,
+    tracer
+  } = request.openTelemetry()
+
+  tracer.withSpan(activeSpan, () => {
+    const span = tracer.getCurrentSpan()
+    if (span) {
+      span.addEvent('Doing Work')
+    }
+  })
+
   reply.send('Fastify OpenTelemetry Example App')
 })
 

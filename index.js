@@ -38,8 +38,28 @@ const statusCodeMap = {
 }
 
 function defaultFormatSpanName (serviceName, rawReq) {
-  const { method, url } = rawReq
-  return `${serviceName} - ${method} - ${url}`
+  return `${serviceName} - ${rawReq.method} - ${rawReq.url}`
+}
+
+const defaultFormatSpanAttributes = {
+  request (request) {
+    return {
+      'req.method': request.raw.method,
+      'req.url': request.raw.url
+    }
+  },
+  reply (reply) {
+    return {
+      'reply.statusCode': reply.statusCode
+    }
+  },
+  error (error) {
+    return {
+      'error.name': error.name,
+      'error.message': error.message,
+      'error.stack': error.stack
+    }
+  }
 }
 
 function openTelemetryPlugin (fastify, opts = {}, next) {
@@ -48,6 +68,11 @@ function openTelemetryPlugin (fastify, opts = {}, next) {
     exposeApi = true,
     formatSpanName = defaultFormatSpanName
   } = opts
+
+  const formatSpanAttributes = {
+    ...defaultFormatSpanAttributes,
+    ...(opts.formatSpanAttributes || {})
+  }
 
   if (!serviceName) {
     fastify.log.warn('fastify-opentelemetry was not provided a serviceName.')
@@ -82,20 +107,13 @@ function openTelemetryPlugin (fastify, opts = {}, next) {
   const tracer = trace.getTracer(moduleName, moduleVersion)
 
   function onRequest (request, reply, next) {
-    const { method: rawMethod, url: rawUrl } = request.raw
     const context = propagation.extract(request.headers)
-
     const span = tracer.startSpan(
       formatSpanName(serviceName, request.raw),
       {},
       context
     )
-
-    span.setAttributes({
-      'http.method': rawMethod,
-      'http.url': rawUrl
-    })
-
+    span.setAttributes(formatSpanAttributes.request(request))
     contextMap.set(request, setActiveSpan(context, span))
     next()
   }
@@ -103,14 +121,13 @@ function openTelemetryPlugin (fastify, opts = {}, next) {
   function onResponse (request, reply, next) {
     const context = contextMap.get(request)
     const span = getActiveSpan(context)
-    const { statusCode } = reply
-    span.setAttribute('http.statusCode', statusCode)
     const spanStatus = { code: OK }
 
-    if (statusCode >= 400) {
-      spanStatus.code = statusCodeMap[statusCode] || UNKNOWN
+    if (reply.statusCode >= 400) {
+      spanStatus.code = statusCodeMap[reply.statusCode] || UNKNOWN
     }
 
+    span.setAttributes(formatSpanAttributes.reply(reply))
     span.setStatus(spanStatus)
     span.end()
     contextMap.delete(request)
@@ -120,13 +137,7 @@ function openTelemetryPlugin (fastify, opts = {}, next) {
   function onError (request, reply, error, next) {
     const context = contextMap.get(request)
     const span = getActiveSpan(context)
-
-    span.setAttributes({
-      'error.name': error.name,
-      'error.message': error.message,
-      'error.stack': error.stack
-    })
-
+    span.setAttributes(formatSpanAttributes.error(error))
     next()
   }
 
