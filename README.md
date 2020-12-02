@@ -15,7 +15,7 @@ npm i @autotelic/fastify-opentelemetry
 // registered, then the configuration will be available to the plugin.
 const api = require('@opentelemetry/api')
 const {
-  ProbabilitySampler,
+  TraceIdRatioBasedSampler,
   HttpTraceContext,
 } = require('@opentelemetry/core')
 const {
@@ -26,7 +26,7 @@ const {
 const openTelemetryPlugin = require('@autotelic/fastify-opentelemetry')
 
 const provider = new BasicTracerProvider({
-  sampler: new ProbabilitySampler(0.5),
+  sampler: new TraceIdRatioBasedSampler(0.5),
   defaultAttributes: {
     foo: 'bar'
   }
@@ -113,11 +113,12 @@ This plugin registers the following Fastify hooks:
  - `onError`: Add error info to span attributes.
 
 [Fastify]: https://fastify.io
-[OpenTelemetry API]: https://github.com/open-telemetry/opentelemetry-js/tree/master/packages/opentelemetry-api
-[`Context`]:https://github.com/open-telemetry/opentelemetry-js/blob/master/packages/opentelemetry-context-base/src/context.ts
-[`Propagation.extract`]:https://github.com/open-telemetry/opentelemetry-js/blob/master/packages/opentelemetry-api/src/api/propagation.ts#L90
-[`Propagation.inject`]: https://github.com/open-telemetry/opentelemetry-js/blob/master/packages/opentelemetry-api/src/api/propagation.ts#L75
-[`Span`]: https://github.com/open-telemetry/opentelemetry-js/blob/master/packages/opentelemetry-tracing/src/Span.ts
-[`Tracer`]: https://github.com/open-telemetry/opentelemetry-js/blob/master/packages/opentelemetry-tracing/src/Tracer.ts
-[`defaultGetter`]:https://github.com/open-telemetry/opentelemetry-js/blob/master/packages/opentelemetry-api/src/context/propagation/getter.ts#L29
-[`defaultSetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/master/packages/opentelemetry-api/src/context/propagation/setter.ts#L29
+[OpenTelemetry API]: https://github.com/open-telemetry/opentelemetry-js/tree/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-api
+[`Context`]:https://github.com/open-telemetry/opentelemetry-js/blob/packages/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/opentelemetry-context-base/src/context.ts
+[`Propagation.extract`]:https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-api/src/api/propagation.ts#L90
+[`Propagation.inject`]: https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-api/src/api/propagation.ts#L75
+[`Span`]: https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-tracing/src/Span.ts
+[`Tracer`]: https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-tracing/src/Tracer.ts
+[`defaultGetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-api/src/context/propagation/getter.ts
+[`defaultSetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-api/src/context/propagation/setter.ts
+
