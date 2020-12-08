@@ -13,7 +13,6 @@ npm i @autotelic/fastify-opentelemetry
 // All OpenTelemetry configuration is done via their API.
 // Note: This can be in its own file - if it's required/imported before the plugin is
 // registered, then the configuration will be available to the plugin.
-const api = require('@opentelemetry/api')
 const {
   TraceIdRatioBasedSampler,
   HttpTraceContext,
@@ -23,8 +22,9 @@ const {
   ConsoleSpanExporter,
   SimpleSpanProcessor
 } = require('@opentelemetry/tracing')
-const openTelemetryPlugin = require('@autotelic/fastify-opentelemetry')
+const { AsyncHooksContextManager } = require('@opentelemetry/context-async-hooks')
 
+// Configure a tracer provider.
 const provider = new BasicTracerProvider({
   sampler: new TraceIdRatioBasedSampler(0.5),
   defaultAttributes: {
@@ -32,15 +32,21 @@ const provider = new BasicTracerProvider({
   }
 })
 
+// Add a span exporter.
 provider.addSpanProcessor(
   new SimpleSpanProcessor(new ConsoleSpanExporter())
 )
 
-// The plugin uses the global propagator to propagate context from request headers.
-api.propagation.setGlobalPropagator(new HttpTraceContext())
-// The plugin uses the global tracer provider's `getTracer` method.
-api.trace.setGlobalTracerProvider(provider)
+// Register a global tracer provider, global context manager, and global propagator.
+provider.register({
+  contextManager: new AsyncHooksContextManager(),
+  propagator: new HttpTraceContext()
+})
 
+// Note: None of the above configuration is a requirement.
+// fastify-opentelemetry is compatible with any @opentelemetry/api(0.12.0) configuration.
+
+const openTelemetryPlugin = require('@autotelic/fastify-opentelemetry')
 const fastify = require('fastify')()
 
 fastify.register(openTelemetryPlugin, { serviceName: 'my-service'})
@@ -48,13 +54,19 @@ fastify.register(openTelemetryPlugin, { serviceName: 'my-service'})
 fastify.get('/', {}, (request, reply) => {
   const {
     activeSpan,
+    tracer,
     // context,
     // extract,
     // inject,
-    // tracer,
   } = request.openTelemetry()
 
-  activeSpan.setAttribute('http.contentType', request.headers['content-type'])
+  tracer.withSpan(activeSpan, () => {
+    const span = tracer.getCurrentSpan()
+    if (span) {
+      span.addEvent('Doing Work')
+    }
+    // doSomeWork()
+  })
 
   reply.send('ok')
 })
@@ -84,7 +96,25 @@ The plugin accepts the the following configuration properties:
 
   - **`exposeApi` : `boolean`** - Used to prevent the plugin from decorating the request. By default the request will be decorated (i.e. defaults to `true`).
 
-  - **`formatSpanName` : `(serviceName, request.raw) => string`** - Custom formatter for the span name. The default format is ``` `${serviceName} - ${rawReq.method} - ${rawReq.url}` ```.
+  - **`formatSpanName` : `(serviceName, FastifyRequest.raw) => string`** - Custom formatter for the span name. The default format is ``` `${serviceName} - ${raw.method} - ${raw.url}` ```.
+
+  - **`formatSpanAttributes` : `object`** - Contains formatting functions for span attributes. *Properties*:
+    - **`request`: `(FastifyRequest) => object`** - On request, the returned object will be added to the current span's attributes. The default request attributes are:
+      ```js
+      { 'req.method': request.raw.method, 'req.url': request.raw.url }
+      ```
+    - **`reply`: `(FastifyReply) => object`** - On reply, the returned object will be added to the current span's attributes. The default reply attributes are:
+      ```js
+      { 'reply.statusCode': reply.statusCode }
+      ```
+    - **`error`: `(Error) => object`** - On error, the returned object will be added to the current span's attributes. The default error attributes are:
+      ```js
+      {
+        'error.name': error.name,
+        'error.message': error.message,
+        'error.stack': error.stack
+      }
+      ```
 
 #### Request Decorator
 

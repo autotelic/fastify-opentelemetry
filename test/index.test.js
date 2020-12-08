@@ -62,11 +62,11 @@ test('should trace a successful request', async ({ is, same, teardown }) => {
   same(STUB_PROPAGATION_API.extract.args[0], [injectArgs.headers], 'should call propagation.extract with the req headers')
 
   same(STUB_SPAN.setAttributes.args[0], [{
-    'http.method': injectArgs.method,
-    'http.url': injectArgs.url
-  }], 'should add the request method and url as attributes')
+    'req.method': injectArgs.method,
+    'req.url': injectArgs.url
+  }], 'should set the default request attributes')
 
-  same(STUB_SPAN.setAttribute.args[0], ['http.statusCode', 200], 'should add the reply status code as an attribute')
+  same(STUB_SPAN.setAttributes.args[1], [{ 'reply.statusCode': 200 }], 'should set the default reply attributes')
   same(STUB_SPAN.setStatus.args[0], [{ code: OK }], 'should set the span status to the correct status code')
   is(STUB_SPAN.end.calledOnce, true, 'should end the span')
 })
@@ -91,18 +91,55 @@ test('should trace an unsuccessful request', async ({ is, same, teardown }) => {
   same(STUB_PROPAGATION_API.extract.args[0], [injectArgs.headers], 'should call propagation.extract with the req headers')
 
   same(STUB_SPAN.setAttributes.args[0], [{
-    'http.method': injectArgs.method,
-    'http.url': injectArgs.url
-  }], 'should add the request method and url as attributes')
+    'req.method': injectArgs.method,
+    'req.url': injectArgs.url
+  }], 'should set the default request attributes')
 
   same(STUB_SPAN.setAttributes.args[1], [{
     'error.name': ERROR.name,
     'error.message': ERROR.message,
     'error.stack': ERROR.stack
-  }], 'should add error info as span attributes')
+  }], 'should set the default error attributes')
 
-  same(STUB_SPAN.setAttribute.args[0], ['http.statusCode', 500], 'should add the reply status code as an attribute')
+  same(STUB_SPAN.setAttributes.args[2], [{ 'reply.statusCode': 500 }], 'should set the default reply attributes')
   same(STUB_SPAN.setStatus.args[0], [{ code: INTERNAL }], 'should set the span status to the correct status code')
+  is(STUB_SPAN.end.calledOnce, true, 'should end the span')
+})
+
+test('should trace request using provided formatSpanAttributes merged with defaults.', async ({ is, same, teardown }) => {
+  const formatSpanAttributes = {
+    request (request) {
+      return {
+        method: request.raw.method,
+        url: request.raw.url,
+        userAgent: request.headers['user-agent'],
+        host: request.headers.host
+      }
+    }
+  }
+  const fastify = setupTest({ serviceName: 'test', formatSpanAttributes })
+
+  teardown(() => {
+    resetHistory()
+    fastify.close()
+  })
+
+  await fastify.inject(injectArgs)
+
+  is(fastify.hasRequestDecorator('openTelemetry'), true, 'should decorate the request')
+  is(STUB_TRACE_API.getTracer.calledOnce, true, 'should getTracer from global provider')
+  is(STUB_TRACER.startSpan.calledOnce, true, 'should start the span')
+  same(STUB_PROPAGATION_API.extract.args[0], [injectArgs.headers], 'should call propagation.extract with the req headers')
+
+  same(STUB_SPAN.setAttributes.args[0], [{
+    method: injectArgs.method,
+    url: injectArgs.url,
+    userAgent: injectArgs.headers['user-agent'],
+    host: injectArgs.headers.host
+  }], 'should set the custom request attributes')
+
+  same(STUB_SPAN.setAttributes.args[1], [{ 'reply.statusCode': 200 }], 'should set the default reply attributes')
+  same(STUB_SPAN.setStatus.args[0], [{ code: OK }], 'should set the span status to the correct status code')
   is(STUB_SPAN.end.calledOnce, true, 'should end the span')
 })
 
