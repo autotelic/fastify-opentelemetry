@@ -1,12 +1,12 @@
 const { test } = require('tap')
 const { resetHistory, stub } = require('sinon')
 const {
-  ROOT_CONTEXT,
-  CanonicalCode,
-  defaultGetter,
-  defaultSetter,
+  defaultTextMapGetter,
+  defaultTextMapSetter,
   getActiveSpan,
-  setActiveSpan
+  setActiveSpan,
+  ROOT_CONTEXT,
+  StatusCode
 } = require('@opentelemetry/api')
 
 const {
@@ -17,12 +17,6 @@ const {
 } = require('./fixtures/openTelemetryApi')
 
 const openTelemetryPlugin = require('../')
-
-const {
-  OK,
-  INTERNAL,
-  UNKNOWN
-} = CanonicalCode
 
 const defaultRouteHandler = (request, reply) => {
   reply.send({ foo: 'bar' })
@@ -67,7 +61,7 @@ test('should trace a successful request', async ({ is, same, teardown }) => {
   }], 'should set the default request attributes')
 
   same(STUB_SPAN.setAttributes.args[1], [{ 'reply.statusCode': 200 }], 'should set the default reply attributes')
-  same(STUB_SPAN.setStatus.args[0], [{ code: OK }], 'should set the span status to the correct status code')
+  same(STUB_SPAN.setStatus.args[0], [{ code: StatusCode.OK }], 'should set the span status to the correct status code')
   is(STUB_SPAN.end.calledOnce, true, 'should end the span')
 })
 
@@ -102,7 +96,7 @@ test('should trace an unsuccessful request', async ({ is, same, teardown }) => {
   }], 'should set the default error attributes')
 
   same(STUB_SPAN.setAttributes.args[2], [{ 'reply.statusCode': 500 }], 'should set the default reply attributes')
-  same(STUB_SPAN.setStatus.args[0], [{ code: INTERNAL }], 'should set the span status to the correct status code')
+  same(STUB_SPAN.setStatus.args[0], [{ code: StatusCode.ERROR }], 'should set the span status to the correct status code')
   is(STUB_SPAN.end.calledOnce, true, 'should end the span')
 })
 
@@ -139,7 +133,7 @@ test('should trace request using provided formatSpanAttributes merged with defau
   }], 'should set the custom request attributes')
 
   same(STUB_SPAN.setAttributes.args[1], [{ 'reply.statusCode': 200 }], 'should set the default reply attributes')
-  same(STUB_SPAN.setStatus.args[0], [{ code: OK }], 'should set the span status to the correct status code')
+  same(STUB_SPAN.setStatus.args[0], [{ code: StatusCode.OK }], 'should set the span status to the correct status code')
   is(STUB_SPAN.end.calledOnce, true, 'should end the span')
 })
 
@@ -205,26 +199,8 @@ test('should be able to access context, activeSpan, extract, inject, and tracer 
   is(STUB_SPAN.setAttribute.calledWith('foo', 'bar'), true)
   is(STUB_SPAN.setAttribute.calledWith('bar', 'foo'), true)
   is(STUB_TRACER.startSpan.calledWith('newSpan'), true)
-  is(STUB_PROPAGATION_API.extract.calledWith(injectArgs.headers, defaultGetter, dummyContext), true)
-  is(STUB_PROPAGATION_API.inject.calledWith(replyHeaders, defaultSetter, dummyContext), true)
-})
-
-test('should set span status code to UNKNOWN when http status code is not in statusCodeMap', async ({ is, teardown }) => {
-  const routeHandler = (request, reply) => {
-    reply.code(418)
-    reply.send('teapot')
-  }
-
-  const fastify = setupTest({ serviceName: 'test' }, routeHandler)
-
-  teardown(() => {
-    resetHistory()
-    fastify.close()
-  })
-
-  await fastify.inject(injectArgs)
-
-  is(STUB_SPAN.setStatus.calledWith({ code: UNKNOWN }), true)
+  is(STUB_PROPAGATION_API.extract.calledWith(injectArgs.headers, defaultTextMapGetter, dummyContext), true)
+  is(STUB_PROPAGATION_API.inject.calledWith(replyHeaders, defaultTextMapSetter, dummyContext), true)
 })
 
 test('should break if fastify instance is not provided', async ({ throws }) => {
