@@ -33,9 +33,9 @@
     "node": ">=10.16.0"
   },
   "devDependencies": {
-    "@opentelemetry/context-async-hooks": "^0.12.0",
-    "@opentelemetry/core": "^0.12.0",
-    "@opentelemetry/tracing": "^0.12.0",
+    "@opentelemetry/context-async-hooks": "^0.13.0",
+    "@opentelemetry/core": "^0.13.0",
+    "@opentelemetry/tracing": "^0.13.0",
     "fastify": "^3.8.0",
     "lint-staged": "^10.5.2",
     "sinon": "^9.2.1",
@@ -43,7 +43,7 @@
     "tap": "^14.11.0"
   },
   "dependencies": {
-    "@opentelemetry/api": "^0.12.0",
+    "@opentelemetry/api": "^0.13.0",
     "fastify-plugin": "^3.0.0"
   },
   "lint-staged": {

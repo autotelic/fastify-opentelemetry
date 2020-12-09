@@ -1,41 +1,15 @@
 const fp = require('fastify-plugin')
 const {
-  CanonicalCode,
-  defaultGetter,
-  defaultSetter,
-  propagation,
-  trace,
+  defaultTextMapGetter,
+  defaultTextMapSetter,
   getActiveSpan,
-  setActiveSpan
+  propagation,
+  setActiveSpan,
+  StatusCode,
+  trace
 } = require('@opentelemetry/api')
 
 const { name: moduleName, version: moduleVersion } = require('./package.json')
-
-const {
-  OK,
-  INVALID_ARGUMENT,
-  INTERNAL,
-  NOT_FOUND,
-  PERMISSION_DENIED,
-  UNAUTHENTICATED,
-  UNIMPLEMENTED,
-  UNAVAILABLE,
-  DEADLINE_EXCEEDED,
-  RESOURCE_EXHAUSTED,
-  UNKNOWN
-} = CanonicalCode
-
-const statusCodeMap = {
-  400: INVALID_ARGUMENT,
-  401: UNAUTHENTICATED,
-  403: PERMISSION_DENIED,
-  404: NOT_FOUND,
-  408: DEADLINE_EXCEEDED,
-  429: RESOURCE_EXHAUSTED,
-  500: INTERNAL,
-  501: UNIMPLEMENTED,
-  503: UNAVAILABLE
-}
 
 function defaultFormatSpanName (serviceName, rawReq) {
   return `${serviceName} - ${rawReq.method} - ${rawReq.url}`
@@ -90,10 +64,10 @@ function openTelemetryPlugin (fastify, opts = {}, next) {
       get tracer () {
         return tracer
       },
-      inject (carrier, setter = defaultSetter) {
+      inject (carrier, setter = defaultTextMapSetter) {
         return propagation.inject(carrier, setter, contextMap.get(request))
       },
-      extract (carrier, getter = defaultGetter) {
+      extract (carrier, getter = defaultTextMapGetter) {
         return propagation.extract(carrier, getter, contextMap.get(request))
       }
     }
@@ -121,10 +95,10 @@ function openTelemetryPlugin (fastify, opts = {}, next) {
   function onResponse (request, reply, next) {
     const context = contextMap.get(request)
     const span = getActiveSpan(context)
-    const spanStatus = { code: OK }
+    const spanStatus = { code: StatusCode.OK }
 
     if (reply.statusCode >= 400) {
-      spanStatus.code = statusCodeMap[reply.statusCode] || UNKNOWN
+      spanStatus.code = StatusCode.ERROR
     }
 
     span.setAttributes(formatSpanAttributes.reply(reply))

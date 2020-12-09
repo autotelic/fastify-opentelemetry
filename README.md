@@ -6,46 +6,14 @@ A [Fastify] plugin that uses the [OpenTelemetry API] to provide request tracing.
 ```sh
 npm i @autotelic/fastify-opentelemetry
 ```
+#### Examples
 
-#### Example
-
+##### Plugin Usage
 ```js
-// All OpenTelemetry configuration is done via their API.
-// Note: This can be in its own file - if it's required/imported before the plugin is
-// registered, then the configuration will be available to the plugin.
-const {
-  TraceIdRatioBasedSampler,
-  HttpTraceContext,
-} = require('@opentelemetry/core')
-const {
-  BasicTracerProvider,
-  ConsoleSpanExporter,
-  SimpleSpanProcessor
-} = require('@opentelemetry/tracing')
-const { AsyncHooksContextManager } = require('@opentelemetry/context-async-hooks')
-
-// Configure a tracer provider.
-const provider = new BasicTracerProvider({
-  sampler: new TraceIdRatioBasedSampler(0.5),
-  defaultAttributes: {
-    foo: 'bar'
-  }
-})
-
-// Add a span exporter.
-provider.addSpanProcessor(
-  new SimpleSpanProcessor(new ConsoleSpanExporter())
-)
-
-// Register a global tracer provider, global context manager, and global propagator.
-provider.register({
-  contextManager: new AsyncHooksContextManager(),
-  propagator: new HttpTraceContext()
-})
-
-// Note: None of the above configuration is a requirement.
-// fastify-opentelemetry is compatible with any @opentelemetry/api(0.12.0) configuration.
-
+// index.js
+// Load your OpenTelemetry/API configuration first. Now the configured SDK will be available
+// to fastify-opentelemetry. (See the example configuration below.)
+require('./openTelemetryConfig')
 const openTelemetryPlugin = require('@autotelic/fastify-opentelemetry')
 const fastify = require('fastify')()
 
@@ -78,6 +46,43 @@ fastify.listen(3000, (err, address) => {
   }
 })
 ```
+##### OpenTelemetry/API Configuration
+```js
+// openTelemetryConfig.js
+const {
+  TraceIdRatioBasedSampler,
+  HttpTraceContext,
+} = require('@opentelemetry/core')
+const {
+  BasicTracerProvider,
+  ConsoleSpanExporter,
+  SimpleSpanProcessor
+} = require('@opentelemetry/tracing')
+const { AsyncHooksContextManager } = require('@opentelemetry/context-async-hooks')
+
+// Configure a tracer provider.
+const provider = new BasicTracerProvider({
+  sampler: new TraceIdRatioBasedSampler(0.5),
+  defaultAttributes: {
+    foo: 'bar'
+  }
+})
+
+// Add a span exporter.
+provider.addSpanProcessor(
+  new SimpleSpanProcessor(new ConsoleSpanExporter())
+)
+
+// Register a global tracer provider, global context manager, and global propagator.
+provider.register({
+  contextManager: new AsyncHooksContextManager(),
+  propagator: new HttpTraceContext()
+})
+
+// Note: the above is just a basic example. fastify-opentelemetry is compatible with any
+// @opentelemetry/api(0.13.0) configuration.
+```
+
 
 See [/example](./example/index.js) for a working example app. To run the example app locally, `npm i` and then run:
 
@@ -124,12 +129,12 @@ This plugin decorates the request with an `openTelemetry` function that returns 
   - **`activeSpan`: [`Span`]** - The active span (while this is available via `context`, here we just provide a shortcut to it.).
 
   - **`extract`: [`Propagation.extract`]** - The propagation API's extract method, with the current request's trace context bound to 3rd argument. This returns a new context and will **not** affect the request's trace context. Accepts the following arguments:
-    - **`carrier`: `Object`** - Object containing the context to be extracted.
-    - **`getter`: `(carrier, key, value) => void`** - Function used to extract values from carrier. Defaults to OpenTelemetry's [`defaultGetter`].
+    - **`carrier`: `object`** - Object containing the context to be extracted.
+    - **`getter`: [`TextMapGetter`]** - Object containing `get` and `keys` methods. Used to extract values from carrier. Defaults to OpenTelemetry's [`defaultTextMapGetter`].
 
   - **`inject`: [`Propagation.inject`]** - The propagation API's inject method, with the current request's trace context bound to 3rd argument. Accepts the following arguments:
-    - **`carrier`: `Object`** - Object the context will be injected into.
-    - **`setter`: `(carrier, key, value) => void`** - Function used to inject values into the carrier. Defaults to OpenTelemetry's [`defaultSetter`].
+    - **`carrier`: `object`** - Object the context will be injected into.
+    - **`setter`: [`TextMapSetter`]** - Object containing `set` method. Used to inject values into the carrier. Defaults to OpenTelemetry's [`defaultTextMapSetter`].
 
   - **`tracer`: [`Tracer`]** - The tracer created and used by the plugin.
 
@@ -142,13 +147,21 @@ This plugin registers the following Fastify hooks:
 
  - `onError`: Add error info to span attributes.
 
-[Fastify]: https://fastify.io
-[OpenTelemetry API]: https://github.com/open-telemetry/opentelemetry-js/tree/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-api
-[`Context`]:https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-context-base/src/context.ts
-[`Propagation.extract`]:https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-api/src/api/propagation.ts#L90
-[`Propagation.inject`]: https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-api/src/api/propagation.ts#L75
-[`Span`]: https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-tracing/src/Span.ts
-[`Tracer`]: https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-tracing/src/Tracer.ts
-[`defaultGetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-api/src/context/propagation/getter.ts
-[`defaultSetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/3f72613a36b6f97555a0fa7481755cf8b6cce1a7/packages/opentelemetry-api/src/context/propagation/setter.ts
+ #### OpenTelemetry Compatibility
+  As of version `0.5.0` this plugin is compatible with `@opentelemetry/api@0.13.0`. Older versions of OpenTelemetry will require previous releases of fastify-opentelemetry.
 
+  - `@opentelemetry/api@0.12.0` -> `@autotelic/fastify-opentelemetry@0.4.0`
+  - `@opentelemetry/api@0.10.0` -> `@autotelic/fastify-opentelemetry@0.2.4`
+  - `@opentelemetry/api@0.9.0` -> `@autotelic/fastify-opentelemetry@0.1.1`
+
+[Fastify]: https://fastify.io
+[OpenTelemetry API]: https://github.com/open-telemetry/opentelemetry-js/tree/86cbd6798f9318c5920f9d9055f289a1c3f26500/packages/opentelemetry-api
+[`Context`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-context-base/src/context.ts#L19
+[`Propagation.extract`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-api/src/api/propagation.ts#L94
+[`Propagation.inject`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-api/src/api/propagation.ts#L79
+[`Span`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-tracing/src/Span.ts#L40
+[`Tracer`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-tracing/src/Tracer.ts#L35
+[`TextMapGetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-api/src/context/propagation/TextMapPropagator.ts#L99
+[`defaultTextMapGetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-api/src/context/propagation/TextMapPropagator.ts#L116
+[`TextMapSetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-api/src/context/propagation/TextMapPropagator.ts#L81
+[`defaultTextMapSetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-api/src/context/propagation/TextMapPropagator.ts#L132
