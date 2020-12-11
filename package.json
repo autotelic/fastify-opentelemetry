@@ -46,6 +46,11 @@
     "@opentelemetry/api": "^0.13.0",
     "fastify-plugin": "^3.0.0"
   },
+  "peerDependencies": {
+    "@opentelemetry/context-async-hooks": "^0.13.0",
+    "@opentelemetry/core": "^0.13.0",
+    "@opentelemetry/tracing": "^0.13.0"
+  },
   "lint-staged": {
     "*.{js,jsx}": [
       "npm run fix"
