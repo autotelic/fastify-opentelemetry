@@ -53,7 +53,7 @@ test('should trace a successful request', async ({ is, same, teardown }) => {
   is(fastify.hasRequestDecorator('openTelemetry'), true, 'should decorate the request')
   is(STUB_TRACE_API.getTracer.calledOnce, true, 'should getTracer from global provider')
   is(STUB_TRACER.startSpan.calledOnce, true, 'should start the span')
-  same(STUB_PROPAGATION_API.extract.args[0], [injectArgs.headers], 'should call propagation.extract with the req headers')
+  same(STUB_PROPAGATION_API.extract.args[0], [ROOT_CONTEXT, injectArgs.headers], 'should call propagation.extract with the req headers')
 
   same(STUB_SPAN.setAttributes.args[0], [{
     'req.method': injectArgs.method,
@@ -82,7 +82,7 @@ test('should trace an unsuccessful request', async ({ is, same, teardown }) => {
   is(fastify.hasRequestDecorator('openTelemetry'), true, 'should decorate the request')
   is(STUB_TRACE_API.getTracer.calledOnce, true, 'should getTracer from global provider')
   is(STUB_TRACER.startSpan.calledOnce, true, 'should start the span')
-  same(STUB_PROPAGATION_API.extract.args[0], [injectArgs.headers], 'should call propagation.extract with the req headers')
+  same(STUB_PROPAGATION_API.extract.args[0], [ROOT_CONTEXT, injectArgs.headers], 'should call propagation.extract with the req headers')
 
   same(STUB_SPAN.setAttributes.args[0], [{
     'req.method': injectArgs.method,
@@ -123,7 +123,7 @@ test('should trace request using provided formatSpanAttributes merged with defau
   is(fastify.hasRequestDecorator('openTelemetry'), true, 'should decorate the request')
   is(STUB_TRACE_API.getTracer.calledOnce, true, 'should getTracer from global provider')
   is(STUB_TRACER.startSpan.calledOnce, true, 'should start the span')
-  same(STUB_PROPAGATION_API.extract.args[0], [injectArgs.headers], 'should call propagation.extract with the req headers')
+  same(STUB_PROPAGATION_API.extract.args[0], [ROOT_CONTEXT, injectArgs.headers], 'should call propagation.extract with the req headers')
 
   same(STUB_SPAN.setAttributes.args[0], [{
     method: injectArgs.method,
@@ -199,8 +199,8 @@ test('should be able to access context, activeSpan, extract, inject, and tracer 
   is(STUB_SPAN.setAttribute.calledWith('foo', 'bar'), true)
   is(STUB_SPAN.setAttribute.calledWith('bar', 'foo'), true)
   is(STUB_TRACER.startSpan.calledWith('newSpan'), true)
-  is(STUB_PROPAGATION_API.extract.calledWith(injectArgs.headers, defaultTextMapGetter, dummyContext), true)
-  is(STUB_PROPAGATION_API.inject.calledWith(replyHeaders, defaultTextMapSetter, dummyContext), true)
+  is(STUB_PROPAGATION_API.extract.calledWith(dummyContext, injectArgs.headers, defaultTextMapGetter), true)
+  is(STUB_PROPAGATION_API.inject.calledWith(dummyContext, replyHeaders, defaultTextMapSetter), true)
 })
 
 test('should break if fastify instance is not provided', async ({ throws }) => {
