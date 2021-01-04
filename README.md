@@ -156,13 +156,13 @@ This plugin registers the following Fastify hooks:
   - `@opentelemetry/api@0.9.0` -> `@autotelic/fastify-opentelemetry@0.1.1`
 
 [Fastify]: https://fastify.io
-[OpenTelemetry API]: https://github.com/open-telemetry/opentelemetry-js/tree/27a8d4530c56257c191468b073669909bf8892a1/packages/opentelemetry-api
-[`Context`]: https://github.com/open-telemetry/opentelemetry-js/blob/27a8d4530c56257c191468b073669909bf8892a1/packages/opentelemetry-context-base/src/types.ts
-[`Propagation.extract`]: https://github.com/open-telemetry/opentelemetry-js/blob/27a8d4530c56257c191468b073669909bf8892a1/packages/opentelemetry-api/src/api/propagation.ts#L91
-[`Propagation.inject`]: https://github.com/open-telemetry/opentelemetry-js/blob/27a8d4530c56257c191468b073669909bf8892a1/packages/opentelemetry-api/src/api/propagation.ts#L76
-[`Span`]: https://github.com/open-telemetry/opentelemetry-js/blob/27a8d4530c56257c191468b073669909bf8892a1/packages/opentelemetry-api/src/trace/span.ts
-[`Tracer`]: https://github.com/open-telemetry/opentelemetry-js/blob/27a8d4530c56257c191468b073669909bf8892a1/packages/opentelemetry-api/src/trace/tracer.ts
-[`TextMapGetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/27a8d4530c56257c191468b073669909bf8892a1/packages/opentelemetry-api/src/context/propagation/TextMapPropagator.ts#L99
-[`defaultTextMapGetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/27a8d4530c56257c191468b073669909bf8892a1/packages/opentelemetry-api/src/context/propagation/TextMapPropagator.ts#L116
-[`TextMapSetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/27a8d4530c56257c191468b073669909bf8892a1/packages/opentelemetry-api/src/context/propagation/TextMapPropagator.ts#L81
-[`defaultTextMapSetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/27a8d4530c56257c191468b073669909bf8892a1/packages/opentelemetry-api/src/context/propagation/TextMapPropagator.ts#L132
+[OpenTelemetry API]: https://open-telemetry.github.io/opentelemetry-js/index.html
+[`Context`]: https://github.com/open-telemetry/opentelemetry-js/blob/master/packages/opentelemetry-context-base/src/types.ts
+[`Propagation.extract`]: https://open-telemetry.github.io/opentelemetry-js/classes/propagationapi.html#extract
+[`Propagation.inject`]: https://open-telemetry.github.io/opentelemetry-js/classes/propagationapi.html#inject
+[`Span`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/span.html
+[`Tracer`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/tracer.html
+[`TextMapGetter`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/textmapgetter.html
+[`defaultTextMapGetter`]: https://open-telemetry.github.io/opentelemetry-js/globals.html#defaulttextmapgetter
+[`TextMapSetter`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/textmapsetter.html
+[`defaultTextMapSetter`]: https://open-telemetry.github.io/opentelemetry-js/globals.html#defaulttextmapsetter
