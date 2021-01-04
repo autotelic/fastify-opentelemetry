@@ -80,7 +80,7 @@ provider.register({
 })
 
 // Note: the above is just a basic example. fastify-opentelemetry is compatible with any
-// @opentelemetry/api(0.13.0) configuration.
+// @opentelemetry/api(0.14.0) configuration.
 ```
 
 
@@ -128,11 +128,11 @@ This plugin decorates the request with an `openTelemetry` function that returns 
 
   - **`activeSpan`: [`Span`]** - The active span (while this is available via `context`, here we just provide a shortcut to it.).
 
-  - **`extract`: [`Propagation.extract`]** - The propagation API's extract method, with the current request's trace context bound to 3rd argument. This returns a new context and will **not** affect the request's trace context. Accepts the following arguments:
+  - **`extract`: [`Propagation.extract`]** - Wraps the propagation API's extract method, and passes in the current request's context as the `context` argument. This returns a new context and will **not** affect the request's trace context. Accepts the following arguments:
     - **`carrier`: `object`** - Object containing the context to be extracted.
     - **`getter`: [`TextMapGetter`]** - Object containing `get` and `keys` methods. Used to extract values from carrier. Defaults to OpenTelemetry's [`defaultTextMapGetter`].
 
-  - **`inject`: [`Propagation.inject`]** - The propagation API's inject method, with the current request's trace context bound to 3rd argument. Accepts the following arguments:
+  - **`inject`: [`Propagation.inject`]** - Wraps the propagation API's inject method, and passes in the current request's context as the `context` argument. Accepts the following arguments:
     - **`carrier`: `object`** - Object the context will be injected into.
     - **`setter`: [`TextMapSetter`]** - Object containing `set` method. Used to inject values into the carrier. Defaults to OpenTelemetry's [`defaultTextMapSetter`].
 
@@ -148,20 +148,21 @@ This plugin registers the following Fastify hooks:
  - `onError`: Add error info to span attributes.
 
  #### OpenTelemetry Compatibility
-  As of version `0.5.0` this plugin is compatible with `@opentelemetry/api@0.13.0`. Older versions of OpenTelemetry will require previous releases of fastify-opentelemetry.
+  As of version `0.6.0` this plugin is compatible with `@opentelemetry/api@0.14.0`. Older versions of OpenTelemetry will require previous releases of fastify-opentelemetry.
 
+  - `@opentelemetry/api@0.13.0` -> `@autotelic/fastify-opentelemetry@0.5.0`
   - `@opentelemetry/api@0.12.0` -> `@autotelic/fastify-opentelemetry@0.4.0`
   - `@opentelemetry/api@0.10.0` -> `@autotelic/fastify-opentelemetry@0.2.4`
   - `@opentelemetry/api@0.9.0` -> `@autotelic/fastify-opentelemetry@0.1.1`
 
 [Fastify]: https://fastify.io
-[OpenTelemetry API]: https://github.com/open-telemetry/opentelemetry-js/tree/86cbd6798f9318c5920f9d9055f289a1c3f26500/packages/opentelemetry-api
-[`Context`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-context-base/src/context.ts#L19
-[`Propagation.extract`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-api/src/api/propagation.ts#L94
-[`Propagation.inject`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-api/src/api/propagation.ts#L79
-[`Span`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-tracing/src/Span.ts#L40
-[`Tracer`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-tracing/src/Tracer.ts#L35
-[`TextMapGetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-api/src/context/propagation/TextMapPropagator.ts#L99
-[`defaultTextMapGetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-api/src/context/propagation/TextMapPropagator.ts#L116
-[`TextMapSetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-api/src/context/propagation/TextMapPropagator.ts#L81
-[`defaultTextMapSetter`]: https://github.com/open-telemetry/opentelemetry-js/blob/91612c4d5eb44c79510e1c47399054432295d2fa/packages/opentelemetry-api/src/context/propagation/TextMapPropagator.ts#L132
+[OpenTelemetry API]: https://open-telemetry.github.io/opentelemetry-js/index.html
+[`Context`]: https://github.com/open-telemetry/opentelemetry-js/blob/master/packages/opentelemetry-context-base/src/types.ts
+[`Propagation.extract`]: https://open-telemetry.github.io/opentelemetry-js/classes/propagationapi.html#extract
+[`Propagation.inject`]: https://open-telemetry.github.io/opentelemetry-js/classes/propagationapi.html#inject
+[`Span`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/span.html
+[`Tracer`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/tracer.html
+[`TextMapGetter`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/textmapgetter.html
+[`defaultTextMapGetter`]: https://open-telemetry.github.io/opentelemetry-js/globals.html#defaulttextmapgetter
+[`TextMapSetter`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/textmapsetter.html
+[`defaultTextMapSetter`]: https://open-telemetry.github.io/opentelemetry-js/globals.html#defaulttextmapsetter

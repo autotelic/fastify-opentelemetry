@@ -1,5 +1,6 @@
 const fp = require('fastify-plugin')
 const {
+  context,
   defaultTextMapGetter,
   defaultTextMapSetter,
   getActiveSpan,
@@ -65,10 +66,10 @@ function openTelemetryPlugin (fastify, opts = {}, next) {
         return tracer
       },
       inject (carrier, setter = defaultTextMapSetter) {
-        return propagation.inject(carrier, setter, contextMap.get(request))
+        return propagation.inject(contextMap.get(request), carrier, setter)
       },
       extract (carrier, getter = defaultTextMapGetter) {
-        return propagation.extract(carrier, getter, contextMap.get(request))
+        return propagation.extract(contextMap.get(request), carrier, getter)
       }
     }
   }
@@ -81,20 +82,20 @@ function openTelemetryPlugin (fastify, opts = {}, next) {
   const tracer = trace.getTracer(moduleName, moduleVersion)
 
   function onRequest (request, reply, next) {
-    const context = propagation.extract(request.headers)
+    const activeContext = propagation.extract(context.active(), request.headers)
     const span = tracer.startSpan(
       formatSpanName(serviceName, request.raw),
       {},
-      context
+      activeContext
     )
     span.setAttributes(formatSpanAttributes.request(request))
-    contextMap.set(request, setActiveSpan(context, span))
+    contextMap.set(request, setActiveSpan(activeContext, span))
     next()
   }
 
   function onResponse (request, reply, next) {
-    const context = contextMap.get(request)
-    const span = getActiveSpan(context)
+    const activeContext = contextMap.get(request)
+    const span = getActiveSpan(activeContext)
     const spanStatus = { code: StatusCode.OK }
 
     if (reply.statusCode >= 400) {
@@ -109,8 +110,8 @@ function openTelemetryPlugin (fastify, opts = {}, next) {
   }
 
   function onError (request, reply, error, next) {
-    const context = contextMap.get(request)
-    const span = getActiveSpan(context)
+    const activeContext = contextMap.get(request)
+    const span = getActiveSpan(activeContext)
     span.setAttributes(formatSpanAttributes.error(error))
     next()
   }
