@@ -3,9 +3,9 @@ const {
   context,
   defaultTextMapGetter,
   defaultTextMapSetter,
-  getActiveSpan,
+  getSpan,
   propagation,
-  setActiveSpan,
+  setSpan,
   StatusCode,
   trace
 } = require('@opentelemetry/api')
@@ -59,7 +59,7 @@ async function openTelemetryPlugin (fastify, opts = {}) {
     const request = this
     return {
       get activeSpan () {
-        return getActiveSpan(getContext(request))
+        return getSpan(getContext(request))
       },
       get context () {
         return getContext(request)
@@ -93,14 +93,14 @@ async function openTelemetryPlugin (fastify, opts = {}) {
       activeContext
     )
     span.setAttributes(formatSpanAttributes.request(request))
-    contextMap.set(request, setActiveSpan(activeContext, span))
+    contextMap.set(request, setSpan(activeContext, span))
   }
 
   async function onResponse (request, reply) {
     if (ignoreRoutes.includes(request.url)) return
 
     const activeContext = getContext(request)
-    const span = getActiveSpan(activeContext)
+    const span = getSpan(activeContext)
     const spanStatus = { code: StatusCode.OK }
 
     if (reply.statusCode >= 400) {
@@ -117,7 +117,7 @@ async function openTelemetryPlugin (fastify, opts = {}) {
     if (ignoreRoutes.includes(request.url)) return
 
     const activeContext = getContext(request)
-    const span = getActiveSpan(activeContext)
+    const span = getSpan(activeContext)
     span.setAttributes(formatSpanAttributes.error(error))
   }
 

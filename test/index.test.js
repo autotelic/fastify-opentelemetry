@@ -3,8 +3,8 @@ const { resetHistory } = require('sinon')
 const {
   defaultTextMapGetter,
   defaultTextMapSetter,
-  getActiveSpan,
-  setActiveSpan,
+  getSpan,
+  setSpan,
   ROOT_CONTEXT,
   StatusCode
 } = require('@opentelemetry/api')
@@ -153,7 +153,7 @@ test('should not decorate the request if exposeApi is false', async ({ is, teard
 })
 
 test('should be able to access context, activeSpan, extract, inject, and tracer via the request decorator', async ({ is, teardown }) => {
-  const dummyContext = setActiveSpan(ROOT_CONTEXT, STUB_SPAN)
+  const dummyContext = setSpan(ROOT_CONTEXT, STUB_SPAN)
   const replyHeaders = { foo: 'bar' }
   async function routeHandler (request, reply) {
     const {
@@ -166,7 +166,7 @@ test('should be able to access context, activeSpan, extract, inject, and tracer 
     const newSpan = tracer.startSpan('newSpan', {}, extract(request.headers))
 
     activeSpan.setAttribute('foo', 'bar')
-    getActiveSpan(context).setAttribute('bar', 'foo')
+    getSpan(context).setAttribute('bar', 'foo')
 
     inject(replyHeaders)
     reply.headers(replyHeaders)
@@ -191,7 +191,7 @@ test('should be able to access context, activeSpan, extract, inject, and tracer 
 })
 
 test('should wrap all routes when wrapRoutes is true', async ({ same, teardown }) => {
-  const dummyContext = setActiveSpan(ROOT_CONTEXT, STUB_SPAN)
+  const dummyContext = setSpan(ROOT_CONTEXT, STUB_SPAN)
 
   const fastify = require('fastify')()
 
@@ -220,7 +220,7 @@ test('should wrap all routes when wrapRoutes is true', async ({ same, teardown }
 })
 
 test('should only wrap routes provided in wrapRoutes array', async ({ same, is, teardown }) => {
-  const dummyContext = setActiveSpan(ROOT_CONTEXT, STUB_SPAN)
+  const dummyContext = setSpan(ROOT_CONTEXT, STUB_SPAN)
 
   const fastify = require('fastify')()
 
