@@ -37,51 +37,55 @@ const defaultFormatSpanAttributes = {
   }
 }
 
-function openTelemetryPlugin (fastify, opts = {}, next) {
+async function openTelemetryPlugin (fastify, opts = {}) {
   const {
     serviceName,
+    wrapRoutes,
     exposeApi = true,
     formatSpanName = defaultFormatSpanName
   } = opts
 
+  const ignoreRoutes = Array.isArray(opts.ignoreRoutes) ? opts.ignoreRoutes : []
   const formatSpanAttributes = {
     ...defaultFormatSpanAttributes,
     ...(opts.formatSpanAttributes || {})
   }
 
-  if (!serviceName) {
-    fastify.log.warn('fastify-opentelemetry was not provided a serviceName.')
+  function getContext (request) {
+    return contextMap.get(request) || context.active()
   }
 
-  function api () {
+  function openTelemetry () {
     const request = this
     return {
       get activeSpan () {
-        return getActiveSpan(contextMap.get(request))
+        return getActiveSpan(getContext(request))
       },
       get context () {
-        return contextMap.get(request)
+        return getContext(request)
       },
       get tracer () {
         return tracer
       },
       inject (carrier, setter = defaultTextMapSetter) {
-        return propagation.inject(contextMap.get(request), carrier, setter)
+        return propagation.inject(getContext(request), carrier, setter)
       },
       extract (carrier, getter = defaultTextMapGetter) {
-        return propagation.extract(contextMap.get(request), carrier, getter)
+        return propagation.extract(getContext(request), carrier, getter)
       }
     }
   }
 
   if (exposeApi) {
-    fastify.decorateRequest('openTelemetry', api)
+    fastify.decorateRequest('openTelemetry', openTelemetry)
   }
 
   const contextMap = new WeakMap()
   const tracer = trace.getTracer(moduleName, moduleVersion)
 
-  function onRequest (request, reply, next) {
+  async function onRequest (request, reply) {
+    if (ignoreRoutes.includes(request.url)) return
+
     const activeContext = propagation.extract(context.active(), request.headers)
     const span = tracer.startSpan(
       formatSpanName(serviceName, request.raw),
@@ -90,11 +94,12 @@ function openTelemetryPlugin (fastify, opts = {}, next) {
     )
     span.setAttributes(formatSpanAttributes.request(request))
     contextMap.set(request, setActiveSpan(activeContext, span))
-    next()
   }
 
-  function onResponse (request, reply, next) {
-    const activeContext = contextMap.get(request)
+  async function onResponse (request, reply) {
+    if (ignoreRoutes.includes(request.url)) return
+
+    const activeContext = getContext(request)
     const span = getActiveSpan(activeContext)
     const spanStatus = { code: StatusCode.OK }
 
@@ -106,23 +111,42 @@ function openTelemetryPlugin (fastify, opts = {}, next) {
     span.setStatus(spanStatus)
     span.end()
     contextMap.delete(request)
-    next()
   }
 
-  function onError (request, reply, error, next) {
-    const activeContext = contextMap.get(request)
+  async function onError (request, reply, error) {
+    if (ignoreRoutes.includes(request.url)) return
+
+    const activeContext = getContext(request)
     const span = getActiveSpan(activeContext)
     span.setAttributes(formatSpanAttributes.error(error))
-    next()
   }
 
   fastify.addHook('onRequest', onRequest)
   fastify.addHook('onResponse', onResponse)
   fastify.addHook('onError', onError)
-  next()
+
+  if (wrapRoutes) {
+    function wrapRoute (routeHandler) {
+      return async function (request, ...args) {
+        const reqContext = getContext(request)
+        return context.with(reqContext, async () => routeHandler(request, ...args))
+      }
+    }
+
+    fastify.addHook('onRoute', function (routeOpts) {
+      const { path, handler } = routeOpts
+      if (!ignoreRoutes.includes(path)) {
+        if (wrapRoutes === true) {
+          routeOpts.handler = wrapRoute(handler)
+        } else if (Array.isArray(wrapRoutes) && wrapRoutes.includes(path)) {
+          routeOpts.handler = wrapRoute(handler)
+        }
+      }
+    })
+  }
 }
 
 module.exports = fp(openTelemetryPlugin, {
-  fastify: '2.x - 3.x',
+  fastify: '3.x',
   name: 'fastify-opentelemetry'
 })

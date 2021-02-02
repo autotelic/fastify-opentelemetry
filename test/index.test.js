@@ -1,5 +1,5 @@
 const { test } = require('tap')
-const { resetHistory, stub } = require('sinon')
+const { resetHistory } = require('sinon')
 const {
   defaultTextMapGetter,
   defaultTextMapSetter,
@@ -10,22 +10,24 @@ const {
 } = require('@opentelemetry/api')
 
 const {
+  STUB_CONTEXT_API,
+  STUB_PROPAGATION_API,
   STUB_SPAN,
   STUB_TRACER,
-  STUB_TRACE_API,
-  STUB_PROPAGATION_API
+  STUB_TRACE_API
 } = require('./fixtures/openTelemetryApi')
 
 const openTelemetryPlugin = require('../')
 
-const defaultRouteHandler = (request, reply) => {
-  reply.send({ foo: 'bar' })
+async function defaultRouteHandler (request, reply) {
+  return { foo: 'bar' }
 }
+
 function setupTest (pluginOpts, routeHandler = defaultRouteHandler) {
   const fastify = require('fastify')()
 
   fastify.register(openTelemetryPlugin, pluginOpts)
-  fastify.get('/test', {}, routeHandler)
+  fastify.get('/test', routeHandler)
   fastify.ready()
 
   return fastify
@@ -150,25 +152,10 @@ test('should not decorate the request if exposeApi is false', async ({ is, teard
   is(fastify.hasRequestDecorator('openTelemetry'), false)
 })
 
-test('should warn if serviceName is not provided', async ({ is, teardown }) => {
-  const fastify = setupTest()
-
-  stub(fastify.log, 'warn')
-
-  teardown(() => {
-    resetHistory()
-    fastify.close()
-  })
-
-  await fastify.inject(injectArgs)
-
-  is(fastify.log.warn.calledWith('fastify-opentelemetry was not provided a serviceName.'), true)
-})
-
 test('should be able to access context, activeSpan, extract, inject, and tracer via the request decorator', async ({ is, teardown }) => {
   const dummyContext = setActiveSpan(ROOT_CONTEXT, STUB_SPAN)
   const replyHeaders = { foo: 'bar' }
-  const routeHandler = (request, reply) => {
+  async function routeHandler (request, reply) {
     const {
       activeSpan,
       context,
@@ -185,7 +172,7 @@ test('should be able to access context, activeSpan, extract, inject, and tracer 
     reply.headers(replyHeaders)
 
     newSpan.end()
-    reply.send('ok')
+    return 'ok'
   }
   const fastify = setupTest({ serviceName: 'test' }, routeHandler)
 
@@ -203,6 +190,96 @@ test('should be able to access context, activeSpan, extract, inject, and tracer 
   is(STUB_PROPAGATION_API.inject.calledWith(dummyContext, replyHeaders, defaultTextMapSetter), true)
 })
 
-test('should break if fastify instance is not provided', async ({ throws }) => {
-  throws(openTelemetryPlugin)
+test('should wrap all routes when wrapRoutes is true', async ({ same, teardown }) => {
+  const dummyContext = setActiveSpan(ROOT_CONTEXT, STUB_SPAN)
+
+  const fastify = require('fastify')()
+
+  fastify.register(openTelemetryPlugin, { serviceName: 'test', wrapRoutes: true })
+
+  const testHandlerOne = async () => 'one'
+  const testHandlerTwo = async () => 'two'
+
+  fastify.get('/testOne', testHandlerOne)
+  fastify.get('/testTwo', testHandlerTwo)
+
+  fastify.ready()
+
+  teardown(() => {
+    resetHistory()
+    fastify.close()
+  })
+
+  await fastify.inject({ ...injectArgs, url: '/testOne' })
+  await fastify.inject({ ...injectArgs, url: '/testTwo' })
+
+  same(STUB_CONTEXT_API.with.args[0][0], dummyContext)
+  same(STUB_CONTEXT_API.with.args[1][0], dummyContext)
+  same(await STUB_CONTEXT_API.with.args[0][1](), await testHandlerOne())
+  same(await STUB_CONTEXT_API.with.args[1][1](), await testHandlerTwo())
+})
+
+test('should only wrap routes provided in wrapRoutes array', async ({ same, is, teardown }) => {
+  const dummyContext = setActiveSpan(ROOT_CONTEXT, STUB_SPAN)
+
+  const fastify = require('fastify')()
+
+  fastify.register(openTelemetryPlugin, { serviceName: 'test', wrapRoutes: ['/testTwo'] })
+
+  const testHandlerOne = async () => 'one'
+  const testHandlerTwo = async () => 'two'
+
+  fastify.get('/testOne', testHandlerOne)
+  fastify.get('/testTwo', testHandlerTwo)
+
+  fastify.ready()
+
+  teardown(() => {
+    resetHistory()
+    fastify.close()
+  })
+
+  await fastify.inject({ ...injectArgs, url: '/testOne' })
+  await fastify.inject({ ...injectArgs, url: '/testTwo' })
+
+  is(STUB_CONTEXT_API.with.calledOnce, true)
+  same(STUB_CONTEXT_API.with.args[0][0], dummyContext)
+  same(await STUB_CONTEXT_API.with.args[0][1](), await testHandlerTwo())
+})
+
+test('should ignore routes found in ignoreRoutes array', async ({ is, same, teardown }) => {
+  const ERROR = Error('error')
+
+  const results = {}
+  async function routeHandler (request, reply) {
+    const {
+      context,
+      activeSpan
+    } = request.openTelemetry()
+    results.context = context
+    results.activeSpan = activeSpan
+    // Return error to cover onError hook as well as onRequest, and onReply.
+    return ERROR
+  }
+  const fastify = setupTest({ serviceName: 'test', wrapRoutes: true, ignoreRoutes: ['/test'] }, routeHandler)
+
+  teardown(() => {
+    resetHistory()
+    fastify.close()
+  })
+
+  await fastify.inject(injectArgs)
+
+  same(results.context, ROOT_CONTEXT)
+  is(results.activeSpan, undefined)
+  is(STUB_TRACER.startSpan.args.length, 0)
+  is(STUB_PROPAGATION_API.extract.args.length, 0)
+  is(STUB_SPAN.setAttributes.args.length, 0)
+  is(STUB_SPAN.setStatus.args.length, 0)
+  is(STUB_SPAN.end.args.length, 0)
+  is(STUB_CONTEXT_API.with.args.length, 0)
+})
+
+test('should break if fastify instance is not provided', async ({ rejects }) => {
+  rejects(openTelemetryPlugin)
 })
