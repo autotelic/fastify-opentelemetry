@@ -38,7 +38,10 @@ app.get('/', async function routeHandler (request, reply) {
 
 const PORT = process.env.PORT || 3000
 
-app.listen(PORT, () => {
+app.listen(PORT, (error) => {
+  if (error) {
+    console.log(error)
+  }
   console.info(`
   *** Listening on Port: ${PORT} ***
 
