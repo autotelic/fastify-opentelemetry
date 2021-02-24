@@ -41,7 +41,7 @@ fastify.listen(3000, (err, address) => {
   }
 })
 ```
-##### OpenTelemetry/API Configuration
+##### OpenTelemetry API Configuration
 ```js
 // openTelemetryConfig.js
 const {
@@ -76,7 +76,7 @@ provider.register({
 })
 
 // Note: the above is just a basic example. fastify-opentelemetry is compatible with any
-// @opentelemetry/api(0.15.0) configuration.
+// @opentelemetry/api(0.17.0) configuration.
 ```
 
 
@@ -156,8 +156,9 @@ This plugin registers the following Fastify hooks:
  - `onRoute`: Added only if `wrapRoutes` is enabled.
 
  #### OpenTelemetry Compatibility
-  As of version `0.8.0` this plugin is compatible with `@opentelemetry/api@0.15.0`. Older versions of OpenTelemetry will require previous releases of fastify-opentelemetry.
+  As of version `0.9.0` this plugin is compatible with `@opentelemetry/api@0.17.0`. Older versions of OpenTelemetry will require previous releases of fastify-opentelemetry.
 
+  - `@opentelemetry/api@0.15.0` -> `@autotelic/fastify-opentelemetry@0.8.0`
   - `@opentelemetry/api@0.14.0` -> `@autotelic/fastify-opentelemetry@0.7.0`
   - `@opentelemetry/api@0.13.0` -> `@autotelic/fastify-opentelemetry@0.5.0`
   - `@opentelemetry/api@0.12.0` -> `@autotelic/fastify-opentelemetry@0.4.0`
@@ -165,8 +166,8 @@ This plugin registers the following Fastify hooks:
   - `@opentelemetry/api@0.9.0` -> `@autotelic/fastify-opentelemetry@0.1.1`
 
 [Fastify]: https://fastify.io
-[OpenTelemetry API]: https://open-telemetry.github.io/opentelemetry-js/index.html
-[`Context`]: https://github.com/open-telemetry/opentelemetry-js/blob/main/packages/opentelemetry-context-base/src/types.ts
+[OpenTelemetry API]: https://github.com/open-telemetry/opentelemetry-js-api
+[`Context`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/context.html
 [`Propagation.extract`]: https://open-telemetry.github.io/opentelemetry-js/classes/propagationapi.html#extract
 [`Propagation.inject`]: https://open-telemetry.github.io/opentelemetry-js/classes/propagationapi.html#inject
 [`Span`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/span.html
@@ -175,5 +176,5 @@ This plugin registers the following Fastify hooks:
 [`defaultTextMapGetter`]: https://open-telemetry.github.io/opentelemetry-js/globals.html#defaulttextmapgetter
 [`TextMapSetter`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/textmapsetter.html
 [`defaultTextMapSetter`]: https://open-telemetry.github.io/opentelemetry-js/globals.html#defaulttextmapsetter
-[OpenTelemetry instrumentations]: https://github.com/open-telemetry/opentelemetry-js#plugins
+[OpenTelemetry instrumentations]: https://github.com/open-telemetry/opentelemetry-js#node-instrumentations--plugins
 [`AsyncHooksContextManager`]: https://github.com/open-telemetry/opentelemetry-js/tree/main/packages/opentelemetry-context-async-hooks

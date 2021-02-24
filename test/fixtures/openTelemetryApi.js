@@ -2,12 +2,13 @@ const { stub } = require('sinon')
 
 const {
   context,
-  NOOP_SPAN,
   NOOP_TRACER,
   NOOP_TRACER_PROVIDER,
   propagation,
   trace
 } = require('@opentelemetry/api')
+
+const NOOP_SPAN = NOOP_TRACER.startSpan()
 
 stub(NOOP_SPAN, 'end')
 stub(NOOP_SPAN, 'setAttributes')

@@ -6,7 +6,7 @@ const {
   getSpan,
   setSpan,
   ROOT_CONTEXT,
-  StatusCode
+  SpanStatusCode
 } = require('@opentelemetry/api')
 
 const {
@@ -63,7 +63,7 @@ test('should trace a successful request', async ({ is, same, teardown }) => {
   }], 'should set the default request attributes')
 
   same(STUB_SPAN.setAttributes.args[1], [{ 'reply.statusCode': 200 }], 'should set the default reply attributes')
-  same(STUB_SPAN.setStatus.args[0], [{ code: StatusCode.OK }], 'should set the span status to the correct status code')
+  same(STUB_SPAN.setStatus.args[0], [{ code: SpanStatusCode.OK }], 'should set the span status to the correct status code')
   is(STUB_SPAN.end.calledOnce, true, 'should end the span')
 })
 
@@ -98,7 +98,7 @@ test('should trace an unsuccessful request', async ({ is, same, teardown }) => {
   }], 'should set the default error attributes')
 
   same(STUB_SPAN.setAttributes.args[2], [{ 'reply.statusCode': 500 }], 'should set the default reply attributes')
-  same(STUB_SPAN.setStatus.args[0], [{ code: StatusCode.ERROR }], 'should set the span status to the correct status code')
+  same(STUB_SPAN.setStatus.args[0], [{ code: SpanStatusCode.ERROR }], 'should set the span status to the correct status code')
   is(STUB_SPAN.end.calledOnce, true, 'should end the span')
 })
 
@@ -135,7 +135,7 @@ test('should trace request using provided formatSpanAttributes merged with defau
   }], 'should set the custom request attributes')
 
   same(STUB_SPAN.setAttributes.args[1], [{ 'reply.statusCode': 200 }], 'should set the default reply attributes')
-  same(STUB_SPAN.setStatus.args[0], [{ code: StatusCode.OK }], 'should set the span status to the correct status code')
+  same(STUB_SPAN.setStatus.args[0], [{ code: SpanStatusCode.OK }], 'should set the span status to the correct status code')
   is(STUB_SPAN.end.calledOnce, true, 'should end the span')
 })
 

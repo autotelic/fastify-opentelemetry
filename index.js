@@ -6,7 +6,7 @@ const {
   getSpan,
   propagation,
   setSpan,
-  StatusCode,
+  SpanStatusCode,
   trace
 } = require('@opentelemetry/api')
 
@@ -101,10 +101,10 @@ async function openTelemetryPlugin (fastify, opts = {}) {
 
     const activeContext = getContext(request)
     const span = getSpan(activeContext)
-    const spanStatus = { code: StatusCode.OK }
+    const spanStatus = { code: SpanStatusCode.OK }
 
     if (reply.statusCode >= 400) {
-      spanStatus.code = StatusCode.ERROR
+      spanStatus.code = SpanStatusCode.ERROR
     }
 
     span.setAttributes(formatSpanAttributes.reply(reply))
