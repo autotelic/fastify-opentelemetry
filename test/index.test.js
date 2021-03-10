@@ -152,8 +152,7 @@ test('should not decorate the request if exposeApi is false', async ({ is, teard
   is(fastify.hasRequestDecorator('openTelemetry'), false)
 })
 
-test('should be able to access context, activeSpan, extract, inject, and tracer via the request decorator', async ({ is, teardown }) => {
-  const dummyContext = setSpan(ROOT_CONTEXT, STUB_SPAN)
+test('should be able to access context, activeSpan, extract, inject, and tracer via the request decorator', async ({ is, teardown, same }) => {
   const replyHeaders = { foo: 'bar' }
   async function routeHandler (request, reply) {
     const {
@@ -183,11 +182,14 @@ test('should be able to access context, activeSpan, extract, inject, and tracer 
 
   await fastify.inject(injectArgs)
 
+  const expectedContext = setSpan(ROOT_CONTEXT, STUB_SPAN)
+
   is(STUB_SPAN.setAttribute.calledWith('foo', 'bar'), true)
   is(STUB_SPAN.setAttribute.calledWith('bar', 'foo'), true)
   is(STUB_TRACER.startSpan.calledWith('newSpan'), true)
-  is(STUB_PROPAGATION_API.extract.calledWith(dummyContext, injectArgs.headers, defaultTextMapGetter), true)
-  is(STUB_PROPAGATION_API.inject.calledWith(dummyContext, replyHeaders, defaultTextMapSetter), true)
+  // extract.args[0] is from the onRequest hook call.
+  same(STUB_PROPAGATION_API.extract.args[1], [expectedContext, injectArgs.headers, defaultTextMapGetter])
+  same(STUB_PROPAGATION_API.inject.args[0], [expectedContext, replyHeaders, defaultTextMapSetter])
 })
 
 test('should wrap all routes when wrapRoutes is true', async ({ same, teardown }) => {
