@@ -76,7 +76,7 @@ provider.register({
 })
 
 // Note: the above is just a basic example. fastify-opentelemetry is compatible with any
-// @opentelemetry/api(0.17.0) configuration.
+// @opentelemetry/api(0.18.0) configuration.
 ```
 
 
@@ -156,8 +156,9 @@ This plugin registers the following Fastify hooks:
  - `onRoute`: Added only if `wrapRoutes` is enabled.
 
  #### OpenTelemetry Compatibility
-  As of version `0.9.0` this plugin is compatible with `@opentelemetry/api@0.17.0`. Older versions of OpenTelemetry will require previous releases of fastify-opentelemetry.
+  As of version `0.10.0` this plugin is compatible with `@opentelemetry/api@0.18.0`. Older versions of OpenTelemetry will require previous releases of fastify-opentelemetry.
 
+  - `@opentelemetry/api@0.17.0` -> `@autotelic/fastify-opentelemetry@0.9.0`
   - `@opentelemetry/api@0.15.0` -> `@autotelic/fastify-opentelemetry@0.8.0`
   - `@opentelemetry/api@0.14.0` -> `@autotelic/fastify-opentelemetry@0.7.0`
   - `@opentelemetry/api@0.13.0` -> `@autotelic/fastify-opentelemetry@0.5.0`
