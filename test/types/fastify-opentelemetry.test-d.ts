@@ -9,6 +9,8 @@ fastify().get('/', (req, res) => {
   expectType<Span | undefined>(req.openTelemetry().activeSpan);
   expectType<Context>(req.openTelemetry().context);
   expectType<Tracer>(req.openTelemetry().tracer);
+  expectType<void>(req.openTelemetry().inject({}));
+  expectType<Context>(req.openTelemetry().extract({}));
 })
 
 // should be able to construct an empty options object
