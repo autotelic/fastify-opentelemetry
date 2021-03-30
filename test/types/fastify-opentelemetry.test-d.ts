@@ -1,13 +1,14 @@
-import { OpenTelemetryPluginOptions } from "../../fastify-opentelemetry";
-import fastify, {FastifyRequest} from "fastify";
+import { OpenTelemetryPluginOptions, OpenTelemetryReqInstance } from "../../fastify-opentelemetry";
+import fastify, { FastifyRequest } from "fastify";
 import { expectType } from 'tsd'
-import {Context, Span, Tracer} from "@opentelemetry/api";
+import { Context, Span, Tracer } from "@opentelemetry/api";
 
-// should be able to use opentelemetry functions on FastifyRequest
+// should be able to use openTelemetry functions on FastifyRequest
 fastify().get('/', (req, res) => {
-  expectType<Span | undefined>(req.activeSpan());
-  expectType<Context>(req.context());
-  expectType<Tracer>(req.tracer());
+  expectType<OpenTelemetryReqInstance>(req.openTelemetry());
+  expectType<Span | undefined>(req.openTelemetry().activeSpan);
+  expectType<Context>(req.openTelemetry().context);
+  expectType<Tracer>(req.openTelemetry().tracer);
 })
 
 // should be able to construct an empty options object
@@ -43,7 +44,7 @@ expectType(<OpenTelemetryPluginOptions>({
     }
   },
   ignoreRoutes: [],
-  formatSpanName: (serviceName: string, raw: FastifyRequest) => `${raw.method} ${serviceName} constant-part`,
+  formatSpanName: (serviceName: string, raw: FastifyRequest['raw']) => `${raw.method} ${serviceName} constant-part`,
   serviceName: "service-name",
   wrapRoutes: true,
 }));

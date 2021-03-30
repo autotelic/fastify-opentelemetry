@@ -11,7 +11,7 @@
     "dev": "node example/index.js",
     "fix": "npm run lint -- --fix",
     "lint": "standard",
-    "test": "tap --100 -j1 -R classic test/**/*.test.js && tsd",
+    "test": "tap --100 -j1 -R classic test/*.test.js && tsd",
     "validate": "npm run lint && npm run test"
   },
   "repository": {

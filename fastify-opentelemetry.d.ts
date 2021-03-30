@@ -1,30 +1,37 @@
 import { FastifyPluginCallback, FastifyReply, FastifyRequest } from 'fastify';
-import { context, getSpan, propagation, TextMapGetter, TextMapSetter, Tracer } from "@opentelemetry/api"
+import { Context, Span, SpanAttributes, TextMapGetter, TextMapSetter, Tracer } from "@opentelemetry/api"
 
 declare module 'fastify' {
   interface FastifyRequest {
-    activeSpan: () => ReturnType<typeof getSpan>,
-    context: () => ReturnType<typeof context.active>,
-    tracer: () => Tracer,
-    inject: <Carrier> (carrier: Carrier, setter?: TextMapSetter) => ReturnType<typeof propagation.inject>,
-    extract: <Carrier> (carrier: Carrier, getter?: TextMapGetter) => ReturnType<typeof propagation.extract>,
+    readonly openTelemetry: () => OpenTelemetryReqInstance,
   }
+}
+
+/**
+ * Object exposed as part of the "openTelemetry" object on the fastify request.
+ */
+export interface OpenTelemetryReqInstance {
+  readonly activeSpan: Span | undefined,
+  readonly context: Context,
+  readonly tracer: Tracer,
+  readonly inject: <Carrier> (carrier: Carrier, setter?: TextMapSetter) => void,
+  readonly extract: <Carrier> (carrier: Carrier, getter?: TextMapGetter) => Context,
 }
 
 /**
  * Options for the OpenTelemetry plugin.
  */
 export interface OpenTelemetryPluginOptions {
-  serviceName?: string,
-  exposeApi?: boolean,
-  formatSpanName?: (serviceName: string, raw: FastifyRequest) => string,
-  formatSpanAttributes?: {
-    request?: (request: FastifyRequest) => object,
-    reply?: (reply: FastifyReply) => object,
-    error?: (error: Error) => object,
+  readonly serviceName?: string,
+  readonly exposeApi?: boolean,
+  readonly formatSpanName?: (serviceName: string, raw: FastifyRequest['raw']) => string,
+  readonly formatSpanAttributes?: {
+    readonly request?: (request: FastifyRequest) => SpanAttributes,
+    readonly reply?: (reply: FastifyReply) => SpanAttributes,
+    readonly error?: (error: Error) => SpanAttributes,
   },
-  wrapRoutes?: boolean | string[],
-  ignoreRoutes?: string[],
+  readonly wrapRoutes?: boolean | string[],
+  readonly ignoreRoutes?: string[],
 }
 
 declare const fastifyOpenTelemetry: FastifyPluginCallback<OpenTelemetryPluginOptions>;
