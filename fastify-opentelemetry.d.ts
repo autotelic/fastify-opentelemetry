@@ -1,11 +1,5 @@
-import { FastifyPluginCallback, FastifyReply, FastifyRequest } from 'fastify';
-import { Context, Span, SpanAttributes, TextMapGetter, TextMapSetter, Tracer } from "@opentelemetry/api"
-
-declare module 'fastify' {
-  interface FastifyRequest {
-    readonly openTelemetry: () => OpenTelemetryReqInstance,
-  }
-}
+import { FastifyPluginCallback, FastifyReply, FastifyRequest } from 'fastify'
+import { Context, Span, SpanAttributes, TextMapGetter, TextMapSetter, Tracer } from '@opentelemetry/api'
 
 /**
  * Object exposed as part of the "openTelemetry" object on the fastify request.
@@ -16,6 +10,12 @@ export interface OpenTelemetryReqInstance {
   readonly tracer: Tracer,
   readonly inject: <Carrier> (carrier: Carrier, setter?: TextMapSetter) => void,
   readonly extract: <Carrier> (carrier: Carrier, getter?: TextMapGetter) => Context,
+}
+
+declare module 'fastify' {
+  interface FastifyRequest {
+    readonly openTelemetry: () => OpenTelemetryReqInstance,
+  }
 }
 
 /**
@@ -34,6 +34,6 @@ export interface OpenTelemetryPluginOptions {
   readonly ignoreRoutes?: string[],
 }
 
-declare const fastifyOpenTelemetry: FastifyPluginCallback<OpenTelemetryPluginOptions>;
+declare const fastifyOpenTelemetry: FastifyPluginCallback<OpenTelemetryPluginOptions>
 
-export default fastifyOpenTelemetry;
+export default fastifyOpenTelemetry

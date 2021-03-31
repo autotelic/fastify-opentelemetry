@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "node example/index.js",
     "fix": "npm run lint -- --fix",
-    "lint": "standard",
+    "lint": "eslint .",
     "test": "tap --100 -j1 -R classic test/*.test.js && tsd",
     "validate": "npm run lint && npm run test"
   },
@@ -40,6 +40,11 @@
     "@opentelemetry/core": "^0.18.0",
     "@opentelemetry/tracing": "^0.18.0",
     "@types/node": "^14.14.36",
+    "@typescript-eslint/eslint-plugin": "^4.20.0",
+    "@typescript-eslint/parser": "^4.20.0",
+    "eslint": "^7.13.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-standard": "^5.0.0",
     "fastify": "^3.8.0",
     "lint-staged": "^10.5.2",
     "sinon": "^9.2.1",
@@ -54,6 +59,12 @@
   "lint-staged": {
     "*.{js,jsx}": [
       "npm run fix"
+    ]
+  },
+  "standard": {
+    "ignore": [
+      "fastify-opentelemetry.d.ts",
+      "test/types/*"
     ]
   },
   "tsd": {
