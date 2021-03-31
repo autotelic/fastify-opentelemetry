@@ -1,0 +1,15 @@
+{
+  "extends": "standard",
+  "env": { "node": true },
+  "overrides": [{
+    "files": ["*.ts"],
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended",
+      "standard"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["@typescript-eslint"]
+  }]
+}
