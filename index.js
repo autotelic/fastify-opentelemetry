@@ -86,7 +86,13 @@ async function openTelemetryPlugin (fastify, opts = {}) {
   async function onRequest (request, reply) {
     if (ignoreRoutes.includes(request.url)) return
 
-    const activeContext = propagation.extract(context.active(), request.headers)
+    let activeContext = context.active()
+
+    // if not running within a local span then extract the context from the headers carrier
+    if (!getSpan(activeContext)) {
+      activeContext = propagation.extract(activeContext, request.headers)
+    }
+
     const span = tracer.startSpan(
       formatSpanName(serviceName, request.raw),
       {},

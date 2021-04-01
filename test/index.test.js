@@ -1,6 +1,7 @@
 const { test } = require('tap')
-const { resetHistory } = require('sinon')
+const { resetHistory, stub } = require('sinon')
 const {
+  context,
   defaultTextMapGetter,
   defaultTextMapSetter,
   getSpan,
@@ -284,4 +285,34 @@ test('should ignore routes found in ignoreRoutes array', async ({ is, same, tear
 
 test('should break if fastify instance is not provided', async ({ rejects }) => {
   rejects(openTelemetryPlugin)
+})
+
+test('should not extract context headers, if an active context exists locally.', async ({ is, same, teardown }) => {
+  const fastify = setupTest({ serviceName: 'test' })
+
+  const activeContext = stub(context, 'active').returns({ getValue: () => STUB_SPAN, setValue: () => null })
+
+  teardown(() => {
+    activeContext.restore()
+    resetHistory()
+    fastify.close()
+  })
+
+  await fastify.inject(injectArgs)
+
+  same(STUB_PROPAGATION_API.extract.args.length, 0, 'should not call propagation.extract')
+
+  // Run the usual assertions, just to make sure that every thing else goes as expected...
+  is(fastify.hasRequestDecorator('openTelemetry'), true, 'should decorate the request')
+  is(STUB_TRACE_API.getTracer.calledOnce, true, 'should getTracer from global provider')
+  is(STUB_TRACER.startSpan.calledOnce, true, 'should start the span')
+
+  same(STUB_SPAN.setAttributes.args[0], [{
+    'req.method': injectArgs.method,
+    'req.url': injectArgs.url
+  }], 'should set the default request attributes')
+
+  same(STUB_SPAN.setAttributes.args[1], [{ 'reply.statusCode': 200 }], 'should set the default reply attributes')
+  same(STUB_SPAN.setStatus.args[0], [{ code: SpanStatusCode.OK }], 'should set the span status to the correct status code')
+  is(STUB_SPAN.end.calledOnce, true, 'should end the span')
 })
