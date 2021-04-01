@@ -1,5 +1,5 @@
 name: Validate
-on: push
+on: [push, pull_request]
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -10,6 +10,4 @@ jobs:
           node-version: '12.x'
           registry-url: 'https://registry.npmjs.org'
       - run: npm install
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
       - run: npm run validate
