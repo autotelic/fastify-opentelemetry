@@ -193,15 +193,24 @@ test('should be able to access context, activeSpan, extract, inject, and tracer 
   same(STUB_PROPAGATION_API.inject.args[0], [expectedContext, replyHeaders, defaultTextMapSetter])
 })
 
-test('should wrap all routes when wrapRoutes is true', async ({ same, teardown }) => {
+test('should wrap all routes when wrapRoutes is true', async ({ is, same, teardown }) => {
   const dummyContext = setSpan(ROOT_CONTEXT, STUB_SPAN)
 
   const fastify = require('fastify')()
 
   fastify.register(openTelemetryPlugin, { serviceName: 'test', wrapRoutes: true })
 
-  const testHandlerOne = async () => 'one'
-  const testHandlerTwo = async () => 'two'
+  async function testHandlerOne (request, reply) {
+    request.openTelemetry()
+    reply.headers({ one: 'ok' })
+    return { body: 'one' }
+  }
+
+  async function testHandlerTwo (request, reply) {
+    request.openTelemetry()
+    reply.headers({ two: 'ok' })
+    return { body: 'two' }
+  }
 
   fastify.get('/testOne', testHandlerOne)
   fastify.get('/testTwo', testHandlerTwo)
@@ -213,13 +222,17 @@ test('should wrap all routes when wrapRoutes is true', async ({ same, teardown }
     fastify.close()
   })
 
-  await fastify.inject({ ...injectArgs, url: '/testOne' })
-  await fastify.inject({ ...injectArgs, url: '/testTwo' })
+  const resOne = await fastify.inject({ ...injectArgs, url: '/testOne' })
+  const resTwo = await fastify.inject({ ...injectArgs, url: '/testTwo' })
 
+  is(resOne.statusCode, 200)
+  is(resOne.headers.one, 'ok')
+  is(resOne.json().body, 'one')
+  is(resTwo.statusCode, 200)
+  is(resTwo.headers.two, 'ok')
+  is(resTwo.json().body, 'two')
   same(STUB_CONTEXT_API.with.args[0][0], dummyContext)
   same(STUB_CONTEXT_API.with.args[1][0], dummyContext)
-  same(await STUB_CONTEXT_API.with.args[0][1](), await testHandlerOne())
-  same(await STUB_CONTEXT_API.with.args[1][1](), await testHandlerTwo())
 })
 
 test('should only wrap routes provided in wrapRoutes array', async ({ same, is, teardown }) => {
@@ -315,4 +328,29 @@ test('should not extract context headers, if an active context exists locally.',
   same(STUB_SPAN.setAttributes.args[1], [{ 'reply.statusCode': 200 }], 'should set the default reply attributes')
   same(STUB_SPAN.setStatus.args[0], [{ code: SpanStatusCode.OK }], 'should set the span status to the correct status code')
   is(STUB_SPAN.end.calledOnce, true, 'should end the span')
+})
+
+test('should preserve this binding in handler using wrapRoutes', async ({ is, same, teardown }) => {
+  teardown(() => {
+    resetHistory()
+    fastify.close()
+  })
+
+  let actual
+  async function handleRequest (request, reply) {
+    if (!this) {
+      throw new Error('this is undefined')
+    }
+    actual = this
+    return {}
+  }
+
+  const fastify = setupTest({
+    serviceName: 'test',
+    wrapRoutes: true
+  }, handleRequest)
+
+  const reply = await fastify.inject(injectArgs)
+  is(reply.statusCode, 200)
+  is(fastify, actual)
 })
