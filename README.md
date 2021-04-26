@@ -76,7 +76,7 @@ provider.register({
 })
 
 // Note: the above is just a basic example. fastify-opentelemetry is compatible with any
-// @opentelemetry/api(0.18.0) configuration.
+// @opentelemetry/api configuration.
 ```
 
 
@@ -155,16 +155,24 @@ This plugin registers the following Fastify hooks:
 
  - `onRoute`: Added only if `wrapRoutes` is enabled.
 
- #### OpenTelemetry Compatibility
-  As of version `0.10.0` this plugin is compatible with `@opentelemetry/api@0.18.0`. Older versions of OpenTelemetry will require previous releases of fastify-opentelemetry.
+#### OpenTelemetry Compatibility
 
-  - `@opentelemetry/api@0.17.0` -> `@autotelic/fastify-opentelemetry@0.9.0`
-  - `@opentelemetry/api@0.15.0` -> `@autotelic/fastify-opentelemetry@0.8.0`
-  - `@opentelemetry/api@0.14.0` -> `@autotelic/fastify-opentelemetry@0.7.0`
-  - `@opentelemetry/api@0.13.0` -> `@autotelic/fastify-opentelemetry@0.5.0`
-  - `@opentelemetry/api@0.12.0` -> `@autotelic/fastify-opentelemetry@0.4.0`
-  - `@opentelemetry/api@0.10.0` -> `@autotelic/fastify-opentelemetry@0.2.4`
-  - `@opentelemetry/api@0.9.0` -> `@autotelic/fastify-opentelemetry@0.1.1`
+As the [OpenTelemetry API](https://github.com/open-telemetry/opentelemetry-js-api#version-compatibility) uses a
+variable on the `global` object to store the global API, care needs to be taken to ensure all modules are compatible.
+
+Each version of the OpenTelemetry API will require a specific release of fastify-opentelemetry.
+
+| OpenTelemetry API Version       | Minimum Fastify OpenTelemetry Version      |
+| ------------------------------- | ------------------------------------------ |
+| `@opentelemetry/api@1.0.0-rc.0` |  `@autotelic/fastify-opentelemetry@0.12.0` |
+| `@opentelemetry/api@0.18.0`     |  `@autotelic/fastify-opentelemetry@0.10.0` |
+| `@opentelemetry/api@0.17.0`     |  `@autotelic/fastify-opentelemetry@0.9.0`  |
+| `@opentelemetry/api@0.15.0`     |  `@autotelic/fastify-opentelemetry@0.8.0`  |
+| `@opentelemetry/api@0.14.0`     |  `@autotelic/fastify-opentelemetry@0.7.0`  |
+| `@opentelemetry/api@0.13.0`     |  `@autotelic/fastify-opentelemetry@0.5.0`  |
+| `@opentelemetry/api@0.12.0`     |  `@autotelic/fastify-opentelemetry@0.4.0`  |
+| `@opentelemetry/api@0.10.0`     |  `@autotelic/fastify-opentelemetry@0.2.4`  |
+| `@opentelemetry/api@0.9.0`      |  `@autotelic/fastify-opentelemetry@0.1.1`  |
 
 [Fastify]: https://fastify.io
 [OpenTelemetry API]: https://github.com/open-telemetry/opentelemetry-js-api
