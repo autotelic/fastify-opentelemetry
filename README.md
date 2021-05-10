@@ -71,7 +71,7 @@ provider.addSpanProcessor(
 // Register a global tracer provider, global context manager, and global propagator.
 provider.register({
   // A contextManager must be provided when using the wrapRoutes option.
-  contextManager: new AsyncHooksContextManager(),
+  contextManager: (new AsyncHooksContextManager()).enable(),
   propagator: new HttpTraceContext()
 })
 

@@ -13,6 +13,6 @@ provider.addSpanProcessor(
 )
 
 provider.register({
-  contextManager: new AsyncHooksContextManager(),
+  contextManager: (new AsyncHooksContextManager()).enable(),
   propagator: new HttpTraceContext()
 })
