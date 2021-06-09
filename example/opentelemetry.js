@@ -1,4 +1,4 @@
-const { HttpTraceContext } = require('@opentelemetry/core')
+const { HttpTraceContextPropagator } = require('@opentelemetry/core')
 const { AsyncHooksContextManager } = require('@opentelemetry/context-async-hooks')
 const {
   BasicTracerProvider,
@@ -14,5 +14,5 @@ provider.addSpanProcessor(
 
 provider.register({
   contextManager: (new AsyncHooksContextManager()).enable(),
-  propagator: new HttpTraceContext()
+  propagator: new HttpTraceContextPropagator()
 })
