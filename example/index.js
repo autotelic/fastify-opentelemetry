@@ -2,45 +2,41 @@
 require('./opentelemetry')
 
 const fastify = require('fastify')
+const fetch = require('node-fetch')
 const fastifyOpentelemetry = require('..')
 
 const app = fastify()
 
 app.register(fastifyOpentelemetry, { serviceName: 'basic-example', wrapRoutes: true })
 
-app.decorateReply('doingWork', async () => 'done')
-
 app.get('/', async function routeHandler (request, reply) {
   const {
     tracer
   } = request.openTelemetry()
-
-  // Spans started in a wrapped route will automatically be children of the activeSpan.
-  const childSpan = tracer.startSpan('reply.doingWork')
+  let childSpan
   try {
-    const result = await reply.doingWork('arg1', 123)
-    childSpan.setAttributes({
-      calledWith: '"arg1", 123',
-      returned: result
-    })
+    // @opentelemetry/instrumentation-http will automatically trace incoming and out going http/https requests.
+    const activityRes = await fetch('https://www.boredapi.com/api/activity')
+    // Spans started in a wrapped route will automatically be children of the activeSpan.
+    childSpan = tracer.startSpan('preparing content')
+    const { activity } = await activityRes.json()
+    reply.type('text/html')
+    return `<h1>Bored?</h1><h3>Have you tried to ${activity.toLowerCase()}</h3>`
   } catch (error) {
-    // fastify-opentelemetry automatically adds Error data to the parent spans attributes.
+    // fastify-opentelemetry automatically adds error data to the parent spans attributes.
     return error
   } finally {
-    // Always be sure to end child spans. Using a `finally` block ensures the span will also end if there's an error.
-    childSpan.end()
+    // Always be sure to end child spans.
+    if (childSpan) childSpan.end()
   }
-
-  reply.type('text/html')
-
-  return '<h1>Fastify OpenTelemetry Example App</h1>'
 })
 
 const PORT = process.env.PORT || 3000
 
 app.listen(PORT, (error) => {
   if (error) {
-    console.log(error)
+    console.error(error)
+    process.exit(1)
   }
   console.info(`
   *** Listening on Port: ${PORT} ***

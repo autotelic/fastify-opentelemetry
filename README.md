@@ -41,46 +41,35 @@ fastify.listen(3000, (err, address) => {
   }
 })
 ```
+
 ##### OpenTelemetry API Configuration
 ```js
 // openTelemetryConfig.js
 const {
-  TraceIdRatioBasedSampler,
-  HttpTraceContext,
-} = require('@opentelemetry/core')
-const {
-  BasicTracerProvider,
+  BatchSpanProcessor
   ConsoleSpanExporter,
-  SimpleSpanProcessor
 } = require('@opentelemetry/tracing')
-const { AsyncHooksContextManager } = require('@opentelemetry/context-async-hooks')
+const { NodeTracerProvider } = require('@opentelemetry/node')
+const { TraceIdRatioBasedSampler } = require('@opentelemetry/core')
 
 // Configure a tracer provider.
-const provider = new BasicTracerProvider({
-  sampler: new TraceIdRatioBasedSampler(0.5),
-  defaultAttributes: {
-    foo: 'bar'
-  }
+const provider = new NodeTracerProvider({
+  sampler: new TraceIdRatioBasedSampler(0.5)
 })
 
 // Add a span exporter.
 provider.addSpanProcessor(
-  new SimpleSpanProcessor(new ConsoleSpanExporter())
+  new BatchSpanProcessor(new ConsoleSpanExporter())
 )
 
-// Register a global tracer provider, global context manager, and global propagator.
-provider.register({
-  // A contextManager must be provided when using the wrapRoutes option.
-  contextManager: (new AsyncHooksContextManager()).enable(),
-  propagator: new HttpTraceContext()
-})
+// Register a global tracer provider.
+provider.register()
 
 // Note: the above is just a basic example. fastify-opentelemetry is compatible with any
 // @opentelemetry/api configuration.
 ```
 
-
-See [/example/basic](./example/index.js) for a working example app. To run the example app locally, `npm i` and then run:
+See [/example](./example/index.js) for a working example app. To run the example app locally, first clone this repo and then `npm i` and run:
 
 ```sh
 npm run dev
