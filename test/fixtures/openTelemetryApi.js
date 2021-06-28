@@ -2,33 +2,32 @@ const { stub } = require('sinon')
 
 const {
   context,
-  NOOP_TRACER,
-  NOOP_TRACER_PROVIDER,
   propagation,
   trace
 } = require('@opentelemetry/api')
 
-const NOOP_SPAN = NOOP_TRACER.startSpan()
+const { name: moduleName, version: moduleVersion } = require('../../package.json')
 
-stub(NOOP_SPAN, 'end')
-stub(NOOP_SPAN, 'setAttributes')
-stub(NOOP_SPAN, 'setAttribute')
-stub(NOOP_SPAN, 'setStatus')
+const stubTracer = trace.getTracer(moduleName, moduleVersion)
+const stubSpan = stubTracer.startSpan('stubSpan')
 
-stub(NOOP_TRACER, 'startSpan').returns(NOOP_SPAN)
+stub(stubSpan, 'end')
+stub(stubSpan, 'setAttributes')
+stub(stubSpan, 'setAttribute')
+stub(stubSpan, 'setStatus')
 
-stub(trace, 'getTracer').returns(NOOP_TRACER)
+stub(stubTracer, 'startSpan').returns(stubSpan)
+
+stub(trace, 'getTracer').returns(stubTracer)
 
 stub(propagation, 'extract').callThrough()
 stub(propagation, 'inject').callThrough()
 
 stub(context, 'with').callThrough()
 
-trace.setGlobalTracerProvider(NOOP_TRACER_PROVIDER)
-
 module.exports = {
-  STUB_SPAN: NOOP_SPAN,
-  STUB_TRACER: NOOP_TRACER,
+  STUB_SPAN: stubSpan,
+  STUB_TRACER: stubTracer,
   STUB_TRACE_API: trace,
   STUB_PROPAGATION_API: propagation,
   STUB_CONTEXT_API: context
