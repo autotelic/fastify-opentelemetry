@@ -153,6 +153,7 @@ Each version of the OpenTelemetry API will require a specific release of fastify
 
 | OpenTelemetry API Version       | Minimum Fastify OpenTelemetry Version      |
 | ------------------------------- | ------------------------------------------ |
+| `@opentelemetry/api@1.0.0`      |  `@autotelic/fastify-opentelemetry@0.14.0` |
 | `@opentelemetry/api@0.20.0`     |  `@autotelic/fastify-opentelemetry@0.13.0` |
 | `@opentelemetry/api@1.0.0-rc.0` |  `@autotelic/fastify-opentelemetry@0.12.0` |
 | `@opentelemetry/api@0.18.0`     |  `@autotelic/fastify-opentelemetry@0.10.0` |
