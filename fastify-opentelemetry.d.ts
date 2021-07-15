@@ -31,7 +31,7 @@ export interface OpenTelemetryPluginOptions {
     readonly error?: (error: Error) => SpanAttributes,
   },
   readonly wrapRoutes?: boolean | string[],
-  readonly ignoreRoutes?: string[],
+  readonly ignoreRoutes?: string[] | ((path: string, method: string) => boolean),
 }
 
 declare const fastifyOpenTelemetry: FastifyPluginCallback<OpenTelemetryPluginOptions>

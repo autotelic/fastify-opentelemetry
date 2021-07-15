@@ -106,13 +106,20 @@ The plugin accepts the the following configuration properties:
       }
       ```
 
-  - **`wrapRoutes` : `boolean | String[]`** - When `true`, all route handlers will be executed with an active context equal to `request.openTelemetry().context`. Also accepts an array containing all route paths that should be wrapped. Optional - disabled by default.
+  - **`wrapRoutes` : `boolean | string[]`** - When `true`, all route handlers will be executed with an active context equal to `request.openTelemetry().context`. Also accepts an array containing all route paths that should be wrapped. Optional - disabled by default.
     - Route paths must have a leading `/` and no trailing `/` (eg. `'/my/exact/route/path'`).
     - Wrapping a route allows for any span created within the scope of the route handler to automatically become children of the current request's `activeSpan`. This includes spans created by automated [OpenTelemetry instrumentations].
     - A global context manager (eg. [`AsyncHooksContextManager`]) is required to provide an active context to the route handler.
 
-  - **`ignoreRoutes` : `String[]`** - All [hooks](#hooks) added by this plugin will ignore the route paths contained in this array (ie. no automated tracing for that route). Takes precedence over `wrapRoutes`.
-    - Route paths must follow the same format as `wrapRoutes`.
+  - **`ignoreRoutes` : `string[] | (path: string, method: string) => boolean`** - Configure the [hooks](#hooks) added by this plugin to ignore certain route paths (ie. no automated tracing for that route). Takes precedence over `wrapRoutes`.
+    - Can be an array of Route paths (following the same format as `wrapRoutes`).
+    - Can be a function that receives a route's path and method, and returns a boolean (return `true` to ignore). For example, to disable tracing on `OPTIONS` routes:
+      ```js
+      fastify.register(openTelemetryPlugin, {
+        serviceName: 'my-service',
+        ignoreRoutes: (path, method) => method === 'OPTIONS'
+      })
+      ```
     - The ignored routes will still have access to `request.openTelemetry`, but `activeSpan` will be `undefined`.
 
 #### Request Decorator
