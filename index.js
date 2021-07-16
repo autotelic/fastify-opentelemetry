@@ -40,10 +40,14 @@ async function openTelemetryPlugin (fastify, opts = {}) {
     serviceName,
     wrapRoutes,
     exposeApi = true,
-    formatSpanName = defaultFormatSpanName
+    formatSpanName = defaultFormatSpanName,
+    ignoreRoutes = []
   } = opts
 
-  const ignoreRoutes = Array.isArray(opts.ignoreRoutes) ? opts.ignoreRoutes : []
+  const shouldIgnoreRoute = typeof ignoreRoutes === 'function'
+    ? ignoreRoutes
+    : path => ignoreRoutes.includes(path)
+
   const formatSpanAttributes = {
     ...defaultFormatSpanAttributes,
     ...(opts.formatSpanAttributes || {})
@@ -82,7 +86,7 @@ async function openTelemetryPlugin (fastify, opts = {}) {
   const tracer = trace.getTracer(moduleName, moduleVersion)
 
   async function onRequest (request, reply) {
-    if (ignoreRoutes.includes(request.url)) return
+    if (shouldIgnoreRoute(request.url, request.method)) return
 
     let activeContext = context.active()
 
@@ -101,7 +105,7 @@ async function openTelemetryPlugin (fastify, opts = {}) {
   }
 
   async function onResponse (request, reply) {
-    if (ignoreRoutes.includes(request.url)) return
+    if (shouldIgnoreRoute(request.url, request.method)) return
 
     const activeContext = getContext(request)
     const span = trace.getSpan(activeContext)
@@ -118,7 +122,7 @@ async function openTelemetryPlugin (fastify, opts = {}) {
   }
 
   async function onError (request, reply, error) {
-    if (ignoreRoutes.includes(request.url)) return
+    if (shouldIgnoreRoute(request.url, request.method)) return
 
     const activeContext = getContext(request)
     const span = trace.getSpan(activeContext)
@@ -138,8 +142,8 @@ async function openTelemetryPlugin (fastify, opts = {}) {
     }
 
     fastify.addHook('onRoute', function (routeOpts) {
-      const { path, handler } = routeOpts
-      if (!ignoreRoutes.includes(path)) {
+      const { path, handler, method } = routeOpts
+      if (!shouldIgnoreRoute(path, method)) {
         if (wrapRoutes === true) {
           routeOpts.handler = wrapRoute(handler)
         } else if (Array.isArray(wrapRoutes) && wrapRoutes.includes(path)) {

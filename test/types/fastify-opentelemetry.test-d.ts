@@ -22,7 +22,7 @@ expectType(<OpenTelemetryPluginOptions>({
   formatSpanAttributes: {},
   ignoreRoutes: ['/a', '/b'],
   serviceName: 'service-name',
-  wrapRoutes: true
+  wrapRoutes: ['/c']
 }))
 
 // should be able to construct a full options object
@@ -45,7 +45,7 @@ expectType(<OpenTelemetryPluginOptions>({
       }
     }
   },
-  ignoreRoutes: [],
+  ignoreRoutes: (path: string, method: string) => method === 'OPTIONS',
   formatSpanName: (serviceName: string, raw: FastifyRequest['raw']) => `${raw.method} ${serviceName} constant-part`,
   serviceName: 'service-name',
   wrapRoutes: true

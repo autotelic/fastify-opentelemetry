@@ -295,6 +295,42 @@ test('should ignore routes found in ignoreRoutes array', async ({ is, same, tear
   is(STUB_CONTEXT_API.with.args.length, 0)
 })
 
+test('should ignore routes for which the ignoreRoutes function returns true', async ({ is, same, teardown }) => {
+  const ERROR = Error('error')
+
+  const results = {}
+  async function routeHandler (request, reply) {
+    const {
+      context,
+      activeSpan
+    } = request.openTelemetry()
+    results.context = context
+    results.activeSpan = activeSpan
+    // Return error to cover onError hook as well as onRequest, and onReply.
+    return ERROR
+  }
+
+  const ignoreRoutes = (path, method) => path === '/test' && method === 'GET'
+
+  const fastify = setupTest({ serviceName: 'test', wrapRoutes: true, ignoreRoutes }, routeHandler)
+
+  teardown(() => {
+    resetHistory()
+    fastify.close()
+  })
+
+  await fastify.inject(injectArgs)
+
+  same(results.context, ROOT_CONTEXT)
+  is(results.activeSpan, undefined)
+  is(STUB_TRACER.startSpan.args.length, 0)
+  is(STUB_PROPAGATION_API.extract.args.length, 0)
+  is(STUB_SPAN.setAttributes.args.length, 0)
+  is(STUB_SPAN.setStatus.args.length, 0)
+  is(STUB_SPAN.end.args.length, 0)
+  is(STUB_CONTEXT_API.with.args.length, 0)
+})
+
 test('should break if fastify instance is not provided', async ({ rejects }) => {
   rejects(openTelemetryPlugin)
 })
