@@ -10,8 +10,8 @@ const {
 
 const { name: moduleName, version: moduleVersion } = require('./package.json')
 
-function defaultFormatSpanName (serviceName, request) {
-  const parts = [serviceName, request.method]
+function defaultFormatSpanName (request) {
+  const parts = [request.method]
   if(request.routerPath) {
     parts.push(request.routerPath)
   }
@@ -100,7 +100,7 @@ async function openTelemetryPlugin (fastify, opts = {}) {
     }
 
     const span = tracer.startSpan(
-      formatSpanName(serviceName, request),
+      formatSpanName(request),
       {},
       activeContext
     )

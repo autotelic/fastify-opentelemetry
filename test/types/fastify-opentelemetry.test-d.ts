@@ -21,7 +21,6 @@ expectType(<OpenTelemetryPluginOptions>({
   exposeApi: true,
   formatSpanAttributes: {},
   ignoreRoutes: ['/a', '/b'],
-  serviceName: 'service-name',
   wrapRoutes: ['/c']
 }))
 
@@ -46,7 +45,6 @@ expectType(<OpenTelemetryPluginOptions>({
     }
   },
   ignoreRoutes: (path: string, method: string) => method === 'OPTIONS',
-  formatSpanName: (serviceName: string, raw: FastifyRequest['raw']) => `${raw.method} ${serviceName} constant-part`,
-  serviceName: 'service-name',
+  formatSpanName: (request: FastifyRequest) => `${request.method} constant-part`,
   wrapRoutes: true
 }))

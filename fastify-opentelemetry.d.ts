@@ -22,9 +22,8 @@ declare module 'fastify' {
  * Options for the OpenTelemetry plugin.
  */
 export interface OpenTelemetryPluginOptions {
-  readonly serviceName?: string,
   readonly exposeApi?: boolean,
-  readonly formatSpanName?: (serviceName: string, raw: FastifyRequest['raw']) => string,
+  readonly formatSpanName?: (request: FastifyRequest) => string,
   readonly formatSpanAttributes?: {
     readonly request?: (request: FastifyRequest) => SpanAttributes,
     readonly reply?: (reply: FastifyReply) => SpanAttributes,

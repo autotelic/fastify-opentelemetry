@@ -409,12 +409,12 @@ test('should use router path in span name', async ({ is, same, teardown }) => {
 
   same(
     STUB_TRACER.startSpan.args[0][0],
-    'service1 GET /test',
+    'GET /test',
     'should contain router path'
   )
   same(
     STUB_TRACER.startSpan.args[1][0],
-    'service1 GET',
+    'GET',
     'should not contain router path when no matching routes found'
   )
 })
