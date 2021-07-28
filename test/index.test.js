@@ -389,3 +389,32 @@ test('should preserve this binding in handler using wrapRoutes', async ({ is, sa
   is(reply.statusCode, 200)
   is(fastify, actual)
 })
+
+test('should use router path in span name', async ({ is, same, teardown }) => {
+  const fastify = setupTest({ serviceName: 'service1' })
+
+  const activeContext = stub(context, 'active').returns({
+    getValue: () => STUB_SPAN,
+    setValue: () => null,
+  })
+
+  teardown(() => {
+    activeContext.restore()
+    resetHistory()
+    fastify.close()
+  })
+
+  await fastify.inject(injectArgs)
+  await fastify.inject({ ...injectArgs, url: '/invalid' })
+
+  same(
+    STUB_TRACER.startSpan.args[0][0],
+    'service1 GET /test',
+    'should contain router path'
+  )
+  same(
+    STUB_TRACER.startSpan.args[1][0],
+    'service1 GET',
+    'should not contain router path when no matching routes found'
+  )
+})
