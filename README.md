@@ -17,7 +17,7 @@ require('./openTelemetryConfig')
 const openTelemetryPlugin = require('@autotelic/fastify-opentelemetry')
 const fastify = require('fastify')()
 
-fastify.register(openTelemetryPlugin, { serviceName: 'my-service', wrapRoutes: true })
+fastify.register(openTelemetryPlugin, { wrapRoutes: true })
 
 fastify.get('/', async function (request, reply) {
   const {
@@ -82,11 +82,9 @@ npm run dev
 This plugin leaves all tracer configuration to the [OpenTelemetry API]. The tracer and propagation method are pulled in from the global tracer provider and global propagator, respectively. This allows the config for the plugin itself to be minimal.
 
 The plugin accepts the the following configuration properties:
-  - **`serviceName`: `string`** - Used for naming the tracer and spans (not required, but recommended).
-
   - **`exposeApi` : `boolean`** - Used to prevent the plugin from decorating the request. By default the request will be decorated (i.e. defaults to `true`).
 
-  - **`formatSpanName` : `(serviceName, FastifyRequest.raw) => string`** - Custom formatter for the span name. The default format is ``` `${serviceName} - ${raw.method} - ${raw.url}` ```.
+  - **`formatSpanName` : `(FastifyRequest) => string`** - Custom formatter for the span name. The default format is ``` `${req.method} {req.routerPath}` ```.
 
   - **`formatSpanAttributes` : `object`** - Contains formatting functions for span attributes. *Properties*:
     - **`request`: `(FastifyRequest) => object`** - On request, the returned object will be added to the current span's attributes. The default request attributes are:
@@ -116,7 +114,6 @@ The plugin accepts the the following configuration properties:
     - Can be a function that receives a route's path and method, and returns a boolean (return `true` to ignore). For example, to disable tracing on `OPTIONS` routes:
       ```js
       fastify.register(openTelemetryPlugin, {
-        serviceName: 'my-service',
         ignoreRoutes: (path, method) => method === 'OPTIONS'
       })
       ```
