@@ -395,7 +395,7 @@ test('should use router path in span name', async ({ is, same, teardown }) => {
 
   const activeContext = stub(context, 'active').returns({
     getValue: () => STUB_SPAN,
-    setValue: () => null,
+    setValue: () => null
   })
 
   teardown(() => {

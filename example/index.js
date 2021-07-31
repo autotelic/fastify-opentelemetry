@@ -10,7 +10,7 @@ const app = fastify()
 
 app.register(fastifyOpentelemetry, { serviceName: 'basic-example', wrapRoutes: true })
 
-app.get('/', async function routeHandler(request, reply) {
+app.get('/', async function routeHandler (request, reply) {
   const {
     tracer
   } = request.openTelemetry()
@@ -32,7 +32,7 @@ app.get('/', async function routeHandler(request, reply) {
   }
 })
 
-app.get('/:type', async function routeHandler(request, reply) {
+app.get('/:type', async function routeHandler (request, reply) {
   const { tracer } = request.openTelemetry()
   let childSpan
   try {
