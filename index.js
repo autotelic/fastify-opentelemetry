@@ -10,8 +10,9 @@ const {
 
 const { name: moduleName, version: moduleVersion } = require('./package.json')
 
-function defaultFormatSpanName (serviceName, rawReq) {
-  return `${serviceName} - ${rawReq.method} - ${rawReq.url}`
+function defaultFormatSpanName (request) {
+  const { method, routerPath } = request
+  return routerPath ? `${method} ${routerPath}` : method
 }
 
 const defaultFormatSpanAttributes = {
@@ -37,7 +38,6 @@ const defaultFormatSpanAttributes = {
 
 async function openTelemetryPlugin (fastify, opts = {}) {
   const {
-    serviceName,
     wrapRoutes,
     exposeApi = true,
     formatSpanName = defaultFormatSpanName,
@@ -96,7 +96,7 @@ async function openTelemetryPlugin (fastify, opts = {}) {
     }
 
     const span = tracer.startSpan(
-      formatSpanName(serviceName, request.raw),
+      formatSpanName(request),
       {},
       activeContext
     )
