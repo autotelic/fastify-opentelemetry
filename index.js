@@ -69,6 +69,9 @@ async function openTelemetryPlugin (fastify, opts = {}) {
       get tracer () {
         return tracer
       },
+      get traceId () {
+        return trace.getSpan(getContext(request))?.spanContext().traceId
+      },
       inject (carrier, setter = defaultTextMapSetter) {
         return propagation.inject(getContext(request), carrier, setter)
       },

@@ -8,6 +8,7 @@ export interface OpenTelemetryReqInstance {
   readonly activeSpan: Span | undefined,
   readonly context: Context,
   readonly tracer: Tracer,
+  readonly traceId: string | undefined,
   readonly inject: <Carrier> (carrier: Carrier, setter?: TextMapSetter) => void,
   readonly extract: <Carrier> (carrier: Carrier, getter?: TextMapGetter) => Context,
 }
