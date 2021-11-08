@@ -46,7 +46,7 @@ fastify.listen(3000, (err, address) => {
 ```js
 // openTelemetryConfig.js
 const {
-  BatchSpanProcessor
+  BatchSpanProcessor,
   ConsoleSpanExporter,
 } = require('@opentelemetry/tracing')
 const { NodeTracerProvider } = require('@opentelemetry/node')
