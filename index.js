@@ -155,6 +155,6 @@ async function openTelemetryPlugin (fastify, opts = {}) {
 }
 
 module.exports = fp(openTelemetryPlugin, {
-  fastify: '3.x',
+  fastify: '4.x',
   name: 'fastify-opentelemetry'
 })
