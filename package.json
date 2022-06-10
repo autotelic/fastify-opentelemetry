@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/autotelic/fastify-opentelemetry#readme",
   "engines": {
-    "node": ">=10.16.0"
+    "node": ">=14"
   },
   "devDependencies": {
     "@opentelemetry/api": "^1.0.0",
