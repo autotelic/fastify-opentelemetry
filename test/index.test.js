@@ -197,7 +197,7 @@ test('should wrap all routes when wrapRoutes is true', async ({ is, same, teardo
 
   const fastify = require('fastify')()
 
-  fastify.register(openTelemetryPlugin, { serviceName: 'test', wrapRoutes: true })
+  await fastify.register(openTelemetryPlugin, { serviceName: 'test', wrapRoutes: true })
 
   async function testHandlerOne (request, reply) {
     request.openTelemetry()
@@ -239,7 +239,7 @@ test('should only wrap routes provided in wrapRoutes array', async ({ same, is, 
 
   const fastify = require('fastify')()
 
-  fastify.register(openTelemetryPlugin, { serviceName: 'test', wrapRoutes: ['/testTwo'] })
+  await fastify.register(openTelemetryPlugin, { serviceName: 'test', wrapRoutes: ['/testTwo'] })
 
   const testHandlerOne = async () => 'one'
   const testHandlerTwo = async () => 'two'
@@ -366,11 +366,6 @@ test('should not extract context headers, if an active context exists locally.',
 })
 
 test('should preserve this binding in handler using wrapRoutes', async ({ is, same, teardown }) => {
-  teardown(() => {
-    resetHistory()
-    fastify.close()
-  })
-
   let actual
   async function handleRequest (request, reply) {
     if (!this) {
@@ -388,6 +383,11 @@ test('should preserve this binding in handler using wrapRoutes', async ({ is, sa
   const reply = await fastify.inject(injectArgs)
   is(reply.statusCode, 200)
   is(fastify, actual)
+
+  teardown(() => {
+    resetHistory()
+    fastify.close()
+  })
 })
 
 test('should use router path in span name', async ({ is, same, teardown }) => {
