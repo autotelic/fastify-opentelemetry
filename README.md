@@ -17,29 +17,31 @@ require('./openTelemetryConfig')
 const openTelemetryPlugin = require('@autotelic/fastify-opentelemetry')
 const fastify = require('fastify')()
 
-fastify.register(openTelemetryPlugin, { wrapRoutes: true })
+(async () => {
+  await fastify.register(openTelemetryPlugin, { wrapRoutes: true })
 
-fastify.get('/', async function (request, reply) {
-  const {
-    activeSpan,
-    tracer,
-    // context,
-    // extract,
-    // inject,
-  } = request.openTelemetry()
-  // Spans started in a wrapped route will automatically be children of the activeSpan.
-  const childSpan = tracer.startSpan(`${activeSpan.name} - child process`)
-  // doSomeWork()
-  childSpan.end()
-  return 'OK'
-})
+  fastify.get('/', async function (request, reply) {
+    const {
+      activeSpan,
+      tracer,
+      // context,
+      // extract,
+      // inject,
+    } = request.openTelemetry()
+    // Spans started in a wrapped route will automatically be children of the activeSpan.
+    const childSpan = tracer.startSpan(`${activeSpan.name} - child process`)
+    // doSomeWork()
+    childSpan.end()
+    return 'OK'
+  })
 
-fastify.listen(3000, (err, address) => {
-  if (err) {
-    fastify.log.error(err)
-    process.exit(1)
-  }
-})
+  fastify.listen(3000, (err, address) => {
+    if (err) {
+      fastify.log.error(err)
+      process.exit(1)
+    }
+  })
+})()
 ```
 
 ##### OpenTelemetry API Configuration
