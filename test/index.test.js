@@ -23,10 +23,10 @@ async function defaultRouteHandler (request, reply) {
   return { foo: 'bar' }
 }
 
-function setupTest (pluginOpts, routeHandler = defaultRouteHandler) {
+async function setupTest (pluginOpts, routeHandler = defaultRouteHandler) {
   const fastify = require('fastify')()
 
-  fastify.register(openTelemetryPlugin, pluginOpts)
+  await fastify.register(openTelemetryPlugin, pluginOpts)
   fastify.get('/test', routeHandler)
   fastify.ready()
 
@@ -42,8 +42,8 @@ const injectArgs = {
   }
 }
 
-test('should trace a successful request', async ({ is, same, teardown }) => {
-  const fastify = setupTest({ serviceName: 'test' })
+test('should trace a successful request', async ({ equal, same, teardown }) => {
+  const fastify = await setupTest({ serviceName: 'test' })
 
   teardown(() => {
     resetHistory()
@@ -52,9 +52,9 @@ test('should trace a successful request', async ({ is, same, teardown }) => {
 
   await fastify.inject(injectArgs)
 
-  is(fastify.hasRequestDecorator('openTelemetry'), true, 'should decorate the request')
-  is(STUB_TRACE_API.getTracer.calledOnce, true, 'should getTracer from global provider')
-  is(STUB_TRACER.startSpan.calledOnce, true, 'should start the span')
+  equal(fastify.hasRequestDecorator('openTelemetry'), true, 'should decorate the request')
+  equal(STUB_TRACE_API.getTracer.calledOnce, true, 'should getTracer from global provider')
+  equal(STUB_TRACER.startSpan.calledOnce, true, 'should start the span')
   same(STUB_PROPAGATION_API.extract.args[0], [ROOT_CONTEXT, injectArgs.headers], 'should call propagation.extract with the req headers')
 
   same(STUB_SPAN.setAttributes.args[0], [{
@@ -64,15 +64,15 @@ test('should trace a successful request', async ({ is, same, teardown }) => {
 
   same(STUB_SPAN.setAttributes.args[1], [{ 'reply.statusCode': 200 }], 'should set the default reply attributes')
   same(STUB_SPAN.setStatus.args[0], [{ code: SpanStatusCode.OK }], 'should set the span status to the correct status code')
-  is(STUB_SPAN.end.calledOnce, true, 'should end the span')
+  equal(STUB_SPAN.end.calledOnce, true, 'should end the span')
 })
 
-test('should trace an unsuccessful request', async ({ is, same, teardown }) => {
+test('should trace an unsuccessful request', async ({ equal, same, teardown }) => {
   const ERROR = Error('error')
   const routeHandler = (request, reply) => {
     reply.send(ERROR)
   }
-  const fastify = setupTest({ serviceName: 'test' }, routeHandler)
+  const fastify = await setupTest({ serviceName: 'test' }, routeHandler)
 
   teardown(() => {
     resetHistory()
@@ -81,9 +81,9 @@ test('should trace an unsuccessful request', async ({ is, same, teardown }) => {
 
   await fastify.inject(injectArgs)
 
-  is(fastify.hasRequestDecorator('openTelemetry'), true, 'should decorate the request')
-  is(STUB_TRACE_API.getTracer.calledOnce, true, 'should getTracer from global provider')
-  is(STUB_TRACER.startSpan.calledOnce, true, 'should start the span')
+  equal(fastify.hasRequestDecorator('openTelemetry'), true, 'should decorate the request')
+  equal(STUB_TRACE_API.getTracer.calledOnce, true, 'should getTracer from global provider')
+  equal(STUB_TRACER.startSpan.calledOnce, true, 'should start the span')
   same(STUB_PROPAGATION_API.extract.args[0], [ROOT_CONTEXT, injectArgs.headers], 'should call propagation.extract with the req headers')
 
   same(STUB_SPAN.setAttributes.args[0], [{
@@ -99,10 +99,10 @@ test('should trace an unsuccessful request', async ({ is, same, teardown }) => {
 
   same(STUB_SPAN.setAttributes.args[2], [{ 'reply.statusCode': 500 }], 'should set the default reply attributes')
   same(STUB_SPAN.setStatus.args[0], [{ code: SpanStatusCode.ERROR }], 'should set the span status to the correct status code')
-  is(STUB_SPAN.end.calledOnce, true, 'should end the span')
+  equal(STUB_SPAN.end.calledOnce, true, 'should end the span')
 })
 
-test('should trace request using provided formatSpanAttributes merged with defaults.', async ({ is, same, teardown }) => {
+test('should trace request using provided formatSpanAttributes merged with defaults.', async ({ equal, same, teardown }) => {
   const formatSpanAttributes = {
     request (request) {
       return {
@@ -113,7 +113,7 @@ test('should trace request using provided formatSpanAttributes merged with defau
       }
     }
   }
-  const fastify = setupTest({ serviceName: 'test', formatSpanAttributes })
+  const fastify = await setupTest({ serviceName: 'test', formatSpanAttributes })
 
   teardown(() => {
     resetHistory()
@@ -122,9 +122,9 @@ test('should trace request using provided formatSpanAttributes merged with defau
 
   await fastify.inject(injectArgs)
 
-  is(fastify.hasRequestDecorator('openTelemetry'), true, 'should decorate the request')
-  is(STUB_TRACE_API.getTracer.calledOnce, true, 'should getTracer from global provider')
-  is(STUB_TRACER.startSpan.calledOnce, true, 'should start the span')
+  equal(fastify.hasRequestDecorator('openTelemetry'), true, 'should decorate the request')
+  equal(STUB_TRACE_API.getTracer.calledOnce, true, 'should getTracer from global provider')
+  equal(STUB_TRACER.startSpan.calledOnce, true, 'should start the span')
   same(STUB_PROPAGATION_API.extract.args[0], [ROOT_CONTEXT, injectArgs.headers], 'should call propagation.extract with the req headers')
 
   same(STUB_SPAN.setAttributes.args[0], [{
@@ -136,11 +136,11 @@ test('should trace request using provided formatSpanAttributes merged with defau
 
   same(STUB_SPAN.setAttributes.args[1], [{ 'reply.statusCode': 200 }], 'should set the default reply attributes')
   same(STUB_SPAN.setStatus.args[0], [{ code: SpanStatusCode.OK }], 'should set the span status to the correct status code')
-  is(STUB_SPAN.end.calledOnce, true, 'should end the span')
+  equal(STUB_SPAN.end.calledOnce, true, 'should end the span')
 })
 
-test('should not decorate the request if exposeApi is false', async ({ is, teardown }) => {
-  const fastify = setupTest({ serviceName: 'test', exposeApi: false })
+test('should not decorate the request if exposeApi is false', async ({ equal, teardown }) => {
+  const fastify = await setupTest({ serviceName: 'test', exposeApi: false })
 
   teardown(() => {
     resetHistory()
@@ -149,10 +149,10 @@ test('should not decorate the request if exposeApi is false', async ({ is, teard
 
   await fastify.inject(injectArgs)
 
-  is(fastify.hasRequestDecorator('openTelemetry'), false)
+  equal(fastify.hasRequestDecorator('openTelemetry'), false)
 })
 
-test('should be able to access context, activeSpan, extract, inject, and tracer via the request decorator', async ({ is, teardown, same }) => {
+test('should be able to access context, activeSpan, extract, inject, and tracer via the request decorator', async ({ equal, teardown, same }) => {
   const replyHeaders = { foo: 'bar' }
   async function routeHandler (request, reply) {
     const {
@@ -173,7 +173,7 @@ test('should be able to access context, activeSpan, extract, inject, and tracer 
     newSpan.end()
     return 'ok'
   }
-  const fastify = setupTest({ serviceName: 'test' }, routeHandler)
+  const fastify = await setupTest({ serviceName: 'test' }, routeHandler)
 
   teardown(() => {
     resetHistory()
@@ -184,15 +184,15 @@ test('should be able to access context, activeSpan, extract, inject, and tracer 
 
   const expectedContext = trace.setSpan(ROOT_CONTEXT, STUB_SPAN)
 
-  is(STUB_SPAN.setAttribute.calledWith('foo', 'bar'), true)
-  is(STUB_SPAN.setAttribute.calledWith('bar', 'foo'), true)
-  is(STUB_TRACER.startSpan.calledWith('newSpan'), true)
+  equal(STUB_SPAN.setAttribute.calledWith('foo', 'bar'), true)
+  equal(STUB_SPAN.setAttribute.calledWith('bar', 'foo'), true)
+  equal(STUB_TRACER.startSpan.calledWith('newSpan'), true)
   // extract.args[0] is from the onRequest hook call.
   same(STUB_PROPAGATION_API.extract.args[1], [expectedContext, injectArgs.headers, defaultTextMapGetter])
   same(STUB_PROPAGATION_API.inject.args[0], [expectedContext, replyHeaders, defaultTextMapSetter])
 })
 
-test('should wrap all routes when wrapRoutes is true', async ({ is, same, teardown }) => {
+test('should wrap all routes when wrapRoutes is true', async ({ equal, same, teardown }) => {
   const dummyContext = trace.setSpan(ROOT_CONTEXT, STUB_SPAN)
 
   const fastify = require('fastify')()
@@ -224,17 +224,17 @@ test('should wrap all routes when wrapRoutes is true', async ({ is, same, teardo
   const resOne = await fastify.inject({ ...injectArgs, url: '/testOne' })
   const resTwo = await fastify.inject({ ...injectArgs, url: '/testTwo' })
 
-  is(resOne.statusCode, 200)
-  is(resOne.headers.one, 'ok')
-  is(resOne.json().body, 'one')
-  is(resTwo.statusCode, 200)
-  is(resTwo.headers.two, 'ok')
-  is(resTwo.json().body, 'two')
+  equal(resOne.statusCode, 200)
+  equal(resOne.headers.one, 'ok')
+  equal(resOne.json().body, 'one')
+  equal(resTwo.statusCode, 200)
+  equal(resTwo.headers.two, 'ok')
+  equal(resTwo.json().body, 'two')
   same(STUB_CONTEXT_API.with.args[0][0], dummyContext)
   same(STUB_CONTEXT_API.with.args[1][0], dummyContext)
 })
 
-test('should only wrap routes provided in wrapRoutes array', async ({ same, is, teardown }) => {
+test('should only wrap routes provided in wrapRoutes array', async ({ same, equal, teardown }) => {
   const dummyContext = trace.setSpan(ROOT_CONTEXT, STUB_SPAN)
 
   const fastify = require('fastify')()
@@ -257,12 +257,12 @@ test('should only wrap routes provided in wrapRoutes array', async ({ same, is, 
   await fastify.inject({ ...injectArgs, url: '/testOne' })
   await fastify.inject({ ...injectArgs, url: '/testTwo' })
 
-  is(STUB_CONTEXT_API.with.calledOnce, true)
+  equal(STUB_CONTEXT_API.with.calledOnce, true)
   same(STUB_CONTEXT_API.with.args[0][0], dummyContext)
   same(await STUB_CONTEXT_API.with.args[0][1](), await testHandlerTwo())
 })
 
-test('should ignore routes found in ignoreRoutes array', async ({ is, same, teardown }) => {
+test('should ignore routes found in ignoreRoutes array', async ({ equal, same, teardown }) => {
   const ERROR = Error('error')
 
   const results = {}
@@ -276,7 +276,7 @@ test('should ignore routes found in ignoreRoutes array', async ({ is, same, tear
     // Return error to cover onError hook as well as onRequest, and onReply.
     return ERROR
   }
-  const fastify = setupTest({ serviceName: 'test', wrapRoutes: true, ignoreRoutes: ['/test'] }, routeHandler)
+  const fastify = await setupTest({ serviceName: 'test', wrapRoutes: true, ignoreRoutes: ['/test'] }, routeHandler)
 
   teardown(() => {
     resetHistory()
@@ -286,16 +286,16 @@ test('should ignore routes found in ignoreRoutes array', async ({ is, same, tear
   await fastify.inject(injectArgs)
 
   same(results.context, ROOT_CONTEXT)
-  is(results.activeSpan, undefined)
-  is(STUB_TRACER.startSpan.args.length, 0)
-  is(STUB_PROPAGATION_API.extract.args.length, 0)
-  is(STUB_SPAN.setAttributes.args.length, 0)
-  is(STUB_SPAN.setStatus.args.length, 0)
-  is(STUB_SPAN.end.args.length, 0)
-  is(STUB_CONTEXT_API.with.args.length, 0)
+  equal(results.activeSpan, undefined)
+  equal(STUB_TRACER.startSpan.args.length, 0)
+  equal(STUB_PROPAGATION_API.extract.args.length, 0)
+  equal(STUB_SPAN.setAttributes.args.length, 0)
+  equal(STUB_SPAN.setStatus.args.length, 0)
+  equal(STUB_SPAN.end.args.length, 0)
+  equal(STUB_CONTEXT_API.with.args.length, 0)
 })
 
-test('should ignore routes for which the ignoreRoutes function returns true', async ({ is, same, teardown }) => {
+test('should ignore routes for which the ignoreRoutes function returns true', async ({ equal, same, teardown }) => {
   const ERROR = Error('error')
 
   const results = {}
@@ -312,7 +312,7 @@ test('should ignore routes for which the ignoreRoutes function returns true', as
 
   const ignoreRoutes = (path, method) => path === '/test' && method === 'GET'
 
-  const fastify = setupTest({ serviceName: 'test', wrapRoutes: true, ignoreRoutes }, routeHandler)
+  const fastify = await setupTest({ serviceName: 'test', wrapRoutes: true, ignoreRoutes }, routeHandler)
 
   teardown(() => {
     resetHistory()
@@ -322,21 +322,21 @@ test('should ignore routes for which the ignoreRoutes function returns true', as
   await fastify.inject(injectArgs)
 
   same(results.context, ROOT_CONTEXT)
-  is(results.activeSpan, undefined)
-  is(STUB_TRACER.startSpan.args.length, 0)
-  is(STUB_PROPAGATION_API.extract.args.length, 0)
-  is(STUB_SPAN.setAttributes.args.length, 0)
-  is(STUB_SPAN.setStatus.args.length, 0)
-  is(STUB_SPAN.end.args.length, 0)
-  is(STUB_CONTEXT_API.with.args.length, 0)
+  equal(results.activeSpan, undefined)
+  equal(STUB_TRACER.startSpan.args.length, 0)
+  equal(STUB_PROPAGATION_API.extract.args.length, 0)
+  equal(STUB_SPAN.setAttributes.args.length, 0)
+  equal(STUB_SPAN.setStatus.args.length, 0)
+  equal(STUB_SPAN.end.args.length, 0)
+  equal(STUB_CONTEXT_API.with.args.length, 0)
 })
 
 test('should break if fastify instance is not provided', async ({ rejects }) => {
   rejects(openTelemetryPlugin)
 })
 
-test('should not extract context headers, if an active context exists locally.', async ({ is, same, teardown }) => {
-  const fastify = setupTest({ serviceName: 'test' })
+test('should not extract context headers, if an active context exists locally.', async ({ equal, same, teardown }) => {
+  const fastify = await setupTest({ serviceName: 'test' })
 
   const activeContext = stub(context, 'active').returns({ getValue: () => STUB_SPAN, setValue: () => null })
 
@@ -351,9 +351,9 @@ test('should not extract context headers, if an active context exists locally.',
   same(STUB_PROPAGATION_API.extract.args.length, 0, 'should not call propagation.extract')
 
   // Run the usual assertions, just to make sure that every thing else goes as expected...
-  is(fastify.hasRequestDecorator('openTelemetry'), true, 'should decorate the request')
-  is(STUB_TRACE_API.getTracer.calledOnce, true, 'should getTracer from global provider')
-  is(STUB_TRACER.startSpan.calledOnce, true, 'should start the span')
+  equal(fastify.hasRequestDecorator('openTelemetry'), true, 'should decorate the request')
+  equal(STUB_TRACE_API.getTracer.calledOnce, true, 'should getTracer from global provider')
+  equal(STUB_TRACER.startSpan.calledOnce, true, 'should start the span')
 
   same(STUB_SPAN.setAttributes.args[0], [{
     'req.method': injectArgs.method,
@@ -362,10 +362,10 @@ test('should not extract context headers, if an active context exists locally.',
 
   same(STUB_SPAN.setAttributes.args[1], [{ 'reply.statusCode': 200 }], 'should set the default reply attributes')
   same(STUB_SPAN.setStatus.args[0], [{ code: SpanStatusCode.OK }], 'should set the span status to the correct status code')
-  is(STUB_SPAN.end.calledOnce, true, 'should end the span')
+  equal(STUB_SPAN.end.calledOnce, true, 'should end the span')
 })
 
-test('should preserve this binding in handler using wrapRoutes', async ({ is, same, teardown }) => {
+test('should preserve this binding in handler using wrapRoutes', async ({ equal, teardown }) => {
   let actual
   async function handleRequest (request, reply) {
     if (!this) {
@@ -375,14 +375,14 @@ test('should preserve this binding in handler using wrapRoutes', async ({ is, sa
     return {}
   }
 
-  const fastify = setupTest({
+  const fastify = await setupTest({
     serviceName: 'test',
     wrapRoutes: true
   }, handleRequest)
 
   const reply = await fastify.inject(injectArgs)
-  is(reply.statusCode, 200)
-  is(fastify, actual)
+  equal(reply.statusCode, 200)
+  equal(fastify, actual)
 
   teardown(() => {
     resetHistory()
@@ -390,8 +390,8 @@ test('should preserve this binding in handler using wrapRoutes', async ({ is, sa
   })
 })
 
-test('should use router path in span name', async ({ is, same, teardown }) => {
-  const fastify = setupTest({ serviceName: 'service1' })
+test('should use router path in span name', async ({ same, teardown }) => {
+  const fastify = await setupTest({ serviceName: 'service1' })
 
   const activeContext = stub(context, 'active').returns({
     getValue: () => STUB_SPAN,
