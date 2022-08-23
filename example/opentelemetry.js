@@ -1,10 +1,10 @@
 const {
   ConsoleSpanExporter,
   SimpleSpanProcessor
-} = require('@opentelemetry/tracing')
+} = require('@opentelemetry/sdk-trace-base')
 const { HttpInstrumentation } = require('@opentelemetry/instrumentation-http')
-const { NodeTracerProvider } = require('@opentelemetry/node')
 const { registerInstrumentations } = require('@opentelemetry/instrumentation')
+const { NodeTracerProvider } = require('@opentelemetry/sdk-trace-node')
 
 const provider = new NodeTracerProvider()
 

@@ -15,7 +15,7 @@ npm i @autotelic/fastify-opentelemetry
 // to fastify-opentelemetry. (See the example configuration below.)
 require('./openTelemetryConfig')
 const openTelemetryPlugin = require('@autotelic/fastify-opentelemetry')
-const fastify = require('fastify')()
+const fastify = require('fastify')();
 
 (async () => {
   await fastify.register(openTelemetryPlugin, { wrapRoutes: true })
@@ -50,9 +50,10 @@ const fastify = require('fastify')()
 const {
   BatchSpanProcessor,
   ConsoleSpanExporter,
-} = require('@opentelemetry/tracing')
-const { NodeTracerProvider } = require('@opentelemetry/node')
-const { TraceIdRatioBasedSampler } = require('@opentelemetry/core')
+  TraceIdRatioBasedSampler
+} = require('@opentelemetry/sdk-trace-base')
+
+const { NodeTracerProvider } = require('@opentelemetry/sdk-trace-node')
 
 // Configure a tracer provider.
 const provider = new NodeTracerProvider({
