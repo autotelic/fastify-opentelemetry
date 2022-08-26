@@ -3,11 +3,13 @@ on: [push, pull_request, workflow_call]
 jobs:
   validate:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['14', '16']
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '14.x'
           registry-url: 'https://registry.npmjs.org/'
       - run: npm install
       - run: npm run validate
