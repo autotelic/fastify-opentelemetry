@@ -8,7 +8,7 @@ const fastifyOpentelemetry = require('..')
 const boredApi = 'http://www.boredapi.com'
 
 const start = async () => {
-  await fastify.register(fastifyOpentelemetry, { serviceName: 'basic-example', wrapRoutes: true })
+  await fastify.register(fastifyOpentelemetry, { wrapRoutes: true })
 
   fastify.get('/', async function routeHandler (request, reply) {
     const {
