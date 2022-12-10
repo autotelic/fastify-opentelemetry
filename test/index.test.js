@@ -43,7 +43,7 @@ const injectArgs = {
 }
 
 test('should trace a successful request', async ({ equal, same, teardown }) => {
-  const fastify = await setupTest({ serviceName: 'test' })
+  const fastify = await setupTest({})
 
   teardown(() => {
     resetHistory()
@@ -72,7 +72,7 @@ test('should trace an unsuccessful request', async ({ equal, same, teardown }) =
   const routeHandler = (request, reply) => {
     reply.send(ERROR)
   }
-  const fastify = await setupTest({ serviceName: 'test' }, routeHandler)
+  const fastify = await setupTest({}, routeHandler)
 
   teardown(() => {
     resetHistory()
@@ -113,7 +113,7 @@ test('should trace request using provided formatSpanAttributes merged with defau
       }
     }
   }
-  const fastify = await setupTest({ serviceName: 'test', formatSpanAttributes })
+  const fastify = await setupTest({ formatSpanAttributes })
 
   teardown(() => {
     resetHistory()
@@ -140,7 +140,7 @@ test('should trace request using provided formatSpanAttributes merged with defau
 })
 
 test('should not decorate the request if exposeApi is false', async ({ equal, teardown }) => {
-  const fastify = await setupTest({ serviceName: 'test', exposeApi: false })
+  const fastify = await setupTest({ exposeApi: false })
 
   teardown(() => {
     resetHistory()
@@ -173,7 +173,7 @@ test('should be able to access context, activeSpan, extract, inject, and tracer 
     newSpan.end()
     return 'ok'
   }
-  const fastify = await setupTest({ serviceName: 'test' }, routeHandler)
+  const fastify = await setupTest({}, routeHandler)
 
   teardown(() => {
     resetHistory()
@@ -197,7 +197,7 @@ test('should wrap all routes when wrapRoutes is true', async ({ equal, same, tea
 
   const fastify = require('fastify')()
 
-  await fastify.register(openTelemetryPlugin, { serviceName: 'test', wrapRoutes: true })
+  await fastify.register(openTelemetryPlugin, { wrapRoutes: true })
 
   async function testHandlerOne (request, reply) {
     request.openTelemetry()
@@ -239,7 +239,7 @@ test('should only wrap routes provided in wrapRoutes array', async ({ same, equa
 
   const fastify = require('fastify')()
 
-  await fastify.register(openTelemetryPlugin, { serviceName: 'test', wrapRoutes: ['/testTwo'] })
+  await fastify.register(openTelemetryPlugin, { wrapRoutes: ['/testTwo'] })
 
   const testHandlerOne = async () => 'one'
   const testHandlerTwo = async () => 'two'
@@ -276,7 +276,7 @@ test('should ignore routes found in ignoreRoutes array', async ({ equal, same, t
     // Return error to cover onError hook as well as onRequest, and onReply.
     return ERROR
   }
-  const fastify = await setupTest({ serviceName: 'test', wrapRoutes: true, ignoreRoutes: ['/test'] }, routeHandler)
+  const fastify = await setupTest({ wrapRoutes: true, ignoreRoutes: ['/test'] }, routeHandler)
 
   teardown(() => {
     resetHistory()
@@ -312,7 +312,7 @@ test('should ignore routes for which the ignoreRoutes function returns true', as
 
   const ignoreRoutes = (path, method) => path === '/test' && method === 'GET'
 
-  const fastify = await setupTest({ serviceName: 'test', wrapRoutes: true, ignoreRoutes }, routeHandler)
+  const fastify = await setupTest({ wrapRoutes: true, ignoreRoutes }, routeHandler)
 
   teardown(() => {
     resetHistory()
@@ -336,7 +336,7 @@ test('should break if fastify instance is not provided', async ({ rejects }) => 
 })
 
 test('should not extract context headers, if an active context exists locally.', async ({ equal, same, teardown }) => {
-  const fastify = await setupTest({ serviceName: 'test' })
+  const fastify = await setupTest({})
 
   const activeContext = stub(context, 'active').returns({ getValue: () => STUB_SPAN, setValue: () => null })
 
@@ -376,7 +376,7 @@ test('should preserve this binding in handler using wrapRoutes', async ({ equal,
   }
 
   const fastify = await setupTest({
-    serviceName: 'test',
+
     wrapRoutes: true
   }, handleRequest)
 
@@ -391,7 +391,7 @@ test('should preserve this binding in handler using wrapRoutes', async ({ equal,
 })
 
 test('should use router path in span name', async ({ same, teardown }) => {
-  const fastify = await setupTest({ serviceName: 'service1' })
+  const fastify = await setupTest({})
 
   const activeContext = stub(context, 'active').returns({
     getValue: () => STUB_SPAN,
