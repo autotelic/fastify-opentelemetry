@@ -12,7 +12,8 @@
     "fix": "npm run lint -- --fix",
     "lint": "eslint .",
     "test": "tap --100 -j1 -R classic test/*.test.js && tsd",
-    "validate": "npm run lint && npm run test"
+    "validate": "npm run lint && npm run test",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -42,17 +43,21 @@
     "@opentelemetry/sdk-trace-base": "^1.5.0",
     "@opentelemetry/sdk-trace-node": "^1.5.0",
     "@types/node": "^14.14.36",
-    "@typescript-eslint/eslint-plugin": "^4.20.0",
-    "@typescript-eslint/parser": "^4.20.0",
-    "eslint": "^7.13.0",
-    "eslint-config-standard": "^16.0.2",
+    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/parser": "^5.53.0",
+    "eslint": "^8.34.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-promise": "^6.1.1",
     "fastify": "^4.0.0",
-    "lint-staged": "^10.5.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.1.2",
     "node-fetch": "^2.6.1",
     "sinon": "^9.2.1",
-    "standard": "^16.0.3",
     "tap": "^16.3.0",
-    "tsd": "^0.14.0"
+    "tsd": "^0.25.0",
+    "typescript": "^4.9.5"
   },
   "peerDependencies": {
     "@opentelemetry/api": "^1.0.0"
@@ -61,14 +66,8 @@
     "fastify-plugin": "^4.0.0"
   },
   "lint-staged": {
-    "*.{js,jsx}": [
+    "*.{js,ts}": [
       "npm run fix"
-    ]
-  },
-  "standard": {
-    "ignore": [
-      "fastify-opentelemetry.d.ts",
-      "test/types/*"
     ]
   },
   "tsd": {
