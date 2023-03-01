@@ -32,6 +32,21 @@ const start = async () => {
     }
   })
 
+  fastify.route({
+    url: '/with-hooks',
+    method: 'GET',
+    handler: async function routeHandler (request, reply) {
+      return 'Hello World With hooks!'
+    },
+    preValidation: function preValidation (request, reply, done) {
+      const { activeSpan } = request.openTelemetry()
+
+      activeSpan.addEvent('preValidation')
+
+      done()
+    }
+  })
+
   fastify.get('/:type', async function routeHandler (request, reply) {
     const { tracer } = request.openTelemetry()
     let childSpan

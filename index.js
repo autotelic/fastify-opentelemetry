@@ -38,7 +38,7 @@ const defaultFormatSpanAttributes = {
 
 async function openTelemetryPlugin (fastify, opts = {}) {
   const {
-    wrapRoutes,
+    wrapRoutes = false,
     exposeApi = true,
     formatSpanName = defaultFormatSpanName,
     ignoreRoutes = []
@@ -85,6 +85,13 @@ async function openTelemetryPlugin (fastify, opts = {}) {
   const contextMap = new WeakMap()
   const tracer = trace.getTracer(moduleName, moduleVersion)
 
+  function shouldWrapRoute (path) {
+    const isAllRoutesActivated = wrapRoutes === true
+    const isRouteActivated = Array.isArray(wrapRoutes) && wrapRoutes.includes(path)
+
+    return isAllRoutesActivated || isRouteActivated
+  }
+
   async function onRequest (request, reply) {
     if (shouldIgnoreRoute(request.url, request.method)) return
 
@@ -105,8 +112,6 @@ async function openTelemetryPlugin (fastify, opts = {}) {
   }
 
   async function onResponse (request, reply) {
-    if (shouldIgnoreRoute(request.url, request.method)) return
-
     const activeContext = getContext(request)
     const span = trace.getSpan(activeContext)
     const spanStatus = { code: SpanStatusCode.OK }
@@ -122,36 +127,52 @@ async function openTelemetryPlugin (fastify, opts = {}) {
   }
 
   async function onError (request, reply, error) {
-    if (shouldIgnoreRoute(request.url, request.method)) return
-
     const activeContext = getContext(request)
     const span = trace.getSpan(activeContext)
     span.setAttributes(formatSpanAttributes.error(error))
   }
 
-  fastify.addHook('onRequest', onRequest)
-  fastify.addHook('onResponse', onResponse)
-  fastify.addHook('onError', onError)
-
-  if (wrapRoutes) {
-    function wrapRoute (routeHandler) {
-      return async function (request, ...args) {
-        const reqContext = getContext(request)
-        return context.with(reqContext, routeHandler.bind(this, request, ...args))
+  function executeIfNotWrappedOrNotIgnoredRoute (handler) {
+    return async function (request, ...params) {
+      if (!shouldWrapRoute(request.routerPath) && !shouldIgnoreRoute(request.url, request.method)) {
+        return handler(request, ...params)
       }
     }
+  }
 
-    fastify.addHook('onRoute', function (routeOpts) {
-      const { path, handler, method } = routeOpts
-      if (!shouldIgnoreRoute(path, method)) {
-        if (wrapRoutes === true) {
-          routeOpts.handler = wrapRoute(handler)
-        } else if (Array.isArray(wrapRoutes) && wrapRoutes.includes(path)) {
-          routeOpts.handler = wrapRoute(handler)
+  fastify.addHook('onRequest', onRequest)
+  fastify.addHook('onResponse', executeIfNotWrappedOrNotIgnoredRoute(onResponse))
+  fastify.addHook('onError', executeIfNotWrappedOrNotIgnoredRoute(onError))
+
+  fastify.addHook('onRoute', function (routeOpts) {
+    const { path, handler, method } = routeOpts
+
+    if (!shouldIgnoreRoute(path, method) && shouldWrapRoute(path)) {
+      function wrapHandler (handler) {
+        return async function (request, ...args) {
+          const reqContext = getContext(request)
+          return context.with(reqContext, handler.bind(this, request, ...args))
         }
       }
-    })
-  }
+
+      routeOpts.handler = wrapHandler(handler)
+
+      function normalizeHooks (hooks) {
+        if (!hooks) {
+          return []
+        }
+
+        if (Array.isArray(hooks)) {
+          return hooks
+        }
+
+        return [hooks]
+      }
+
+      routeOpts.onResponse = [...normalizeHooks(routeOpts.onResponse), onResponse]
+      routeOpts.onError = [...normalizeHooks(routeOpts.onError), onError]
+    }
+  })
 }
 
 module.exports = fp(openTelemetryPlugin, {

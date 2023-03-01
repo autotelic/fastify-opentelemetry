@@ -23,12 +23,21 @@ async function defaultRouteHandler (request, reply) {
   return { foo: 'bar' }
 }
 
-async function setupTest (pluginOpts, routeHandler = defaultRouteHandler) {
+async function setupTest (pluginOpts, routeHandler = defaultRouteHandler, hooks = {}, customize = async () => {}) {
   const fastify = require('fastify')()
 
   await fastify.register(openTelemetryPlugin, pluginOpts)
   fastify.get('/test', routeHandler)
-  fastify.ready()
+  fastify.route({
+    method: 'GET',
+    url: '/test-with-hooks',
+    handler: routeHandler,
+    ...hooks
+  })
+
+  await customize(fastify)
+
+  await fastify.ready()
 
   return fastify
 }
@@ -40,6 +49,11 @@ const injectArgs = {
     'user-agent': 'lightMyRequest',
     host: 'localhost:80'
   }
+}
+
+const injectArgsWithHooks = {
+  ...injectArgs,
+  url: '/test-with-hooks'
 }
 
 test('should trace a successful request', async ({ equal, same, teardown }) => {
@@ -376,7 +390,6 @@ test('should preserve this binding in handler using wrapRoutes', async ({ equal,
   }
 
   const fastify = await setupTest({
-
     wrapRoutes: true
   }, handleRequest)
 
@@ -417,4 +430,188 @@ test('should use router path in span name', async ({ same, teardown }) => {
     'GET',
     'should not contain router path when no matching routes found'
   )
+})
+
+test('should wrap all hooks associated with a route', async ({ equal, same, teardown }) => {
+  const dummyContext = trace.setSpan(ROOT_CONTEXT, STUB_SPAN)
+
+  const results = {}
+
+  const createHookHandler = (name) => {
+    return async function hookHandler (request, reply) {
+      const {
+        context,
+        activeSpan
+      } = request.openTelemetry()
+
+      results[name] = {
+        context,
+        activeSpan
+      }
+    }
+  }
+
+  const hooks = {
+    onRequest: createHookHandler('onRequest'),
+    preParsing: createHookHandler('preParsing'),
+    preValidation: createHookHandler('preValidation'),
+    preHandler: createHookHandler('preHandler'),
+    preSerialization: createHookHandler('preSerialization'),
+    onSend: createHookHandler('onSend'),
+    onResponse: createHookHandler('onResponse')
+  }
+
+  const fastify = await setupTest({ wrapRoutes: true }, defaultRouteHandler, hooks)
+
+  await fastify.inject(injectArgsWithHooks)
+
+  teardown(() => {
+    resetHistory()
+    fastify.close()
+  })
+
+  same(results.onRequest.context, dummyContext)
+  equal(results.onRequest.activeSpan, STUB_SPAN)
+
+  same(results.preParsing.context, dummyContext)
+  equal(results.preParsing.activeSpan, STUB_SPAN)
+
+  same(results.preValidation.context, dummyContext)
+  equal(results.preValidation.activeSpan, STUB_SPAN)
+
+  same(results.preHandler.context, dummyContext)
+  equal(results.preHandler.activeSpan, STUB_SPAN)
+
+  same(results.preSerialization.context, dummyContext)
+  equal(results.preSerialization.activeSpan, STUB_SPAN)
+
+  same(results.onSend.context, dummyContext)
+  equal(results.onSend.activeSpan, STUB_SPAN)
+
+  same(results.onResponse.context, dummyContext)
+  equal(results.onResponse.activeSpan, STUB_SPAN)
+})
+
+test('should wrap all hooks associated with a route if arrays', async ({ equal, same, teardown }) => {
+  const dummyContext = trace.setSpan(ROOT_CONTEXT, STUB_SPAN)
+
+  const results = {}
+
+  const createHookHandler = (name) => {
+    return async function hookHandler (request, reply) {
+      const {
+        context,
+        activeSpan
+      } = request.openTelemetry()
+
+      results[name] = {
+        context,
+        activeSpan
+      }
+    }
+  }
+
+  const hooks = {
+    onRequest: [createHookHandler('onRequest'), createHookHandler('onRequest2')],
+    preValidation: [createHookHandler('preValidation'), createHookHandler('preValidation2')],
+    onResponse: [createHookHandler('onResponse'), createHookHandler('onResponse2')],
+    onSend: [createHookHandler('onSend'), createHookHandler('onSend2')]
+  }
+
+  const fastify = await setupTest({ wrapRoutes: true }, defaultRouteHandler, hooks)
+
+  await fastify.inject(injectArgsWithHooks)
+
+  teardown(() => {
+    resetHistory()
+    fastify.close()
+  })
+
+  same(results.onRequest.context, dummyContext)
+  equal(results.onRequest.activeSpan, STUB_SPAN)
+  same(results.onRequest2.context, dummyContext)
+  equal(results.onRequest2.activeSpan, STUB_SPAN)
+
+  same(results.preValidation.context, dummyContext)
+  equal(results.preValidation.activeSpan, STUB_SPAN)
+  same(results.preValidation2.context, dummyContext)
+  equal(results.preValidation2.activeSpan, STUB_SPAN)
+
+  same(results.onResponse.context, dummyContext)
+  equal(results.onResponse.activeSpan, STUB_SPAN)
+  same(results.onResponse2.context, dummyContext)
+  equal(results.onResponse2.activeSpan, STUB_SPAN)
+
+  same(results.onSend.context, dummyContext)
+  equal(results.onSend.activeSpan, STUB_SPAN)
+  same(results.onSend2.context, dummyContext)
+  equal(results.onSend2.activeSpan, STUB_SPAN)
+})
+
+test('adds context to hooks added outside of the route options', async ({ equal, same, teardown }) => {
+  const dummyContext = trace.setSpan(ROOT_CONTEXT, STUB_SPAN)
+
+  const results = {}
+
+  const createHookHandler = (name) => {
+    return async function hookHandler (request, reply) {
+      const {
+        context,
+        activeSpan
+      } = request.openTelemetry()
+
+      results[name] = {
+        context,
+        activeSpan
+      }
+    }
+  }
+
+  const hooks = {
+    onRequest: createHookHandler('onRequest'),
+    preParsing: createHookHandler('preParsing'),
+    preValidation: createHookHandler('preValidation'),
+    preHandler: createHookHandler('preHandler'),
+    preSerialization: createHookHandler('preSerialization'),
+    onSend: createHookHandler('onSend'),
+    onResponse: createHookHandler('onResponse')
+  }
+
+  const fastify = await setupTest({ wrapRoutes: true }, defaultRouteHandler, {}, (fastify) => {
+    fastify.addHook('onRequest', hooks.onRequest)
+    fastify.addHook('preParsing', hooks.preParsing)
+    fastify.addHook('preValidation', hooks.preValidation)
+    fastify.addHook('preHandler', hooks.preHandler)
+    fastify.addHook('preSerialization', hooks.preSerialization)
+    fastify.addHook('onSend', hooks.onSend)
+    fastify.addHook('onResponse', hooks.onResponse)
+  })
+
+  await fastify.inject(injectArgs)
+
+  teardown(() => {
+    resetHistory()
+    fastify.close()
+  })
+
+  same(results.onRequest.context, dummyContext)
+  equal(results.onRequest.activeSpan, STUB_SPAN)
+
+  same(results.preParsing.context, dummyContext)
+  equal(results.preParsing.activeSpan, STUB_SPAN)
+
+  same(results.preValidation.context, dummyContext)
+  equal(results.preValidation.activeSpan, STUB_SPAN)
+
+  same(results.preHandler.context, dummyContext)
+  equal(results.preHandler.activeSpan, STUB_SPAN)
+
+  same(results.preSerialization.context, dummyContext)
+  equal(results.preSerialization.activeSpan, STUB_SPAN)
+
+  same(results.onSend.context, dummyContext)
+  equal(results.onSend.activeSpan, STUB_SPAN)
+
+  same(results.onResponse.context, dummyContext)
+  equal(results.onResponse.activeSpan, STUB_SPAN)
 })
