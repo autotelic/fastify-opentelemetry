@@ -11,8 +11,14 @@ const {
 const { name: moduleName, version: moduleVersion } = require('./package.json')
 
 function defaultFormatSpanName (request) {
-  const { method, routerPath } = request
-  return routerPath ? `${method} ${routerPath}` : method
+  const { method } = request
+  let path
+  if (request.routeOptions) {
+    path = request.routeOptions.url
+  } else {
+    path = request.routerPath
+  }
+  return path ? `${method} ${path}` : method
 }
 
 const defaultFormatSpanAttributes = {
