@@ -35,4 +35,4 @@ export interface OpenTelemetryPluginOptions {
 
 declare const fastifyOpenTelemetry: FastifyPluginCallback<OpenTelemetryPluginOptions>
 
-export default fastifyOpenTelemetry
+export = fastifyOpenTelemetry
