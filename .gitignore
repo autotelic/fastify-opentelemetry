@@ -120,3 +120,6 @@ dist
 
 # Lock files
 package-lock.json
+
+# Node Tap
+.tap

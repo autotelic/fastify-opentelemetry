@@ -2,7 +2,6 @@
 require('./opentelemetry')
 
 const fastify = require('fastify')()
-const fetch = require('node-fetch')
 const fastifyOpentelemetry = require('..')
 
 const boredApi = 'http://www.boredapi.com'

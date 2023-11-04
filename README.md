@@ -1,14 +1,17 @@
-## Fastify OpenTelemetry
+# Fastify OpenTelemetry
 
 A [Fastify] plugin that uses the [OpenTelemetry API] to provide request tracing.
 
-### Usage
+## Usage
+
 ```sh
 npm i @autotelic/fastify-opentelemetry
 ```
-#### Examples
 
-##### Plugin Usage
+### Examples
+
+#### Plugin Usage
+
 ```js
 // index.js
 // Load your OpenTelemetry/API configuration first. Now the configured SDK will be available
@@ -44,7 +47,8 @@ const fastify = require('fastify')();
 })()
 ```
 
-##### OpenTelemetry API Configuration
+#### OpenTelemetry API Configuration
+
 ```js
 // openTelemetryConfig.js
 const {
@@ -78,27 +82,33 @@ See [/example](./example/index.js) for a working example app. To run the example
 npm run dev
 ```
 
-### API
+## API
 
-#### Configuration
+### Configuration
 
 This plugin leaves all tracer configuration to the [OpenTelemetry API]. The tracer and propagation method are pulled in from the global tracer provider and global propagator, respectively. This allows the config for the plugin itself to be minimal.
 
 The plugin accepts the the following configuration properties:
-  - **`exposeApi` : `boolean`** - Used to prevent the plugin from decorating the request. By default the request will be decorated (i.e. defaults to `true`).
 
-  - **`formatSpanName` : `(FastifyRequest) => string`** - Custom formatter for the span name. The default format is ``` `${req.method} {req.routerPath}` ```.
+- **`exposeApi` : `boolean`** - Used to prevent the plugin from decorating the request. By default the request will be decorated (i.e. defaults to `true`).
 
-  - **`formatSpanAttributes` : `object`** - Contains formatting functions for span attributes. *Properties*:
-    - **`request`: `(FastifyRequest) => object`** - On request, the returned object will be added to the current span's attributes. The default request attributes are:
+- **`formatSpanName` : `(FastifyRequest) => string`** - Custom formatter for the span name. The default format is ``` `${req.method} {req.routeOptions.url}` ```.
+
+- **`formatSpanAttributes` : `object`** - Contains formatting functions for span attributes. *Properties*:
+  - **`request`: `(FastifyRequest) => object`** - On request, the returned object will be added to the current span's attributes. The default request attributes are:
+
       ```js
       { 'req.method': request.raw.method, 'req.url': request.raw.url }
       ```
-    - **`reply`: `(FastifyReply) => object`** - On reply, the returned object will be added to the current span's attributes. The default reply attributes are:
+
+  - **`reply`: `(FastifyReply) => object`** - On reply, the returned object will be added to the current span's attributes. The default reply attributes are:
+
       ```js
       { 'reply.statusCode': reply.statusCode }
       ```
-    - **`error`: `(Error) => object`** - On error, the returned object will be added to the current span's attributes. The default error attributes are:
+
+  - **`error`: `(Error) => object`** - On error, the returned object will be added to the current span's attributes. The default error attributes are:
+
       ```js
       {
         'error.name': error.name,
@@ -107,51 +117,54 @@ The plugin accepts the the following configuration properties:
       }
       ```
 
-  - **`wrapRoutes` : `boolean | string[]`** - When `true`, all route handlers will be executed with an active context equal to `request.openTelemetry().context`. Also accepts an array containing all route paths that should be wrapped. Optional - disabled by default.
-    - Route paths must have a leading `/` and no trailing `/` (eg. `'/my/exact/route/path'`).
-    - Wrapping a route allows for any span created within the scope of the route handler to automatically become children of the current request's `activeSpan`. This includes spans created by automated [OpenTelemetry instrumentations].
-    - A global context manager (eg. [`AsyncHooksContextManager`]) is required to provide an active context to the route handler.
+- **`wrapRoutes` : `boolean | string[]`** - When `true`, all route handlers will be executed with an active context equal to `request.openTelemetry().context`. Also accepts an array containing all route paths that should be wrapped. Optional - disabled by default.
+  - Route paths must have a leading `/` and no trailing `/` (eg. `'/my/exact/route/path'`).
+  - Wrapping a route allows for any span created within the scope of the route handler to automatically become children of the current request's `activeSpan`. This includes spans created by automated [OpenTelemetry instrumentations].
+  - A global context manager (eg. [`AsyncHooksContextManager`]) is required to provide an active context to the route handler.
 
-  - **`ignoreRoutes` : `string[] | (path: string, method: string) => boolean`** - Configure the [hooks](#hooks) added by this plugin to ignore certain route paths (ie. no automated tracing for that route). Takes precedence over `wrapRoutes`.
-    - Can be an array of Route paths (following the same format as `wrapRoutes`).
-    - Can be a function that receives a route's path and method, and returns a boolean (return `true` to ignore). For example, to disable tracing on `OPTIONS` routes:
+- **`ignoreRoutes` : `string[] | (path: string, method: string) => boolean`** - Configure the [hooks](#hooks) added by this plugin to ignore certain route paths (ie. no automated tracing for that route). Takes precedence over `wrapRoutes`.
+  - Can be an array of Route paths (following the same format as `wrapRoutes`).
+  - Can be a function that receives a route's path and method, and returns a boolean (return `true` to ignore). For example, to disable tracing on `OPTIONS` routes:
+
       ```js
       fastify.register(openTelemetryPlugin, {
         ignoreRoutes: (path, method) => method === 'OPTIONS'
       })
       ```
-    - The ignored routes will still have access to `request.openTelemetry`, but `activeSpan` will be `undefined`.
 
-#### Request Decorator
+  - The ignored routes will still have access to `request.openTelemetry`, but `activeSpan` will be `undefined`.
+
+### Request Decorator
 
 This plugin decorates the request with an `openTelemetry` function that returns an object with the following properties:
-  - **`context`: [`Context`]** - Context containing the active span along with any extracted context.
 
-  - **`activeSpan`: [`Span`]** - The active span (while this is available via `context`, here we just provide a shortcut to it.).
+- **`context`: [`Context`]** - Context containing the active span along with any extracted context.
 
-  - **`extract`: [`Propagation.extract`]** - Wraps the propagation API's extract method, and passes in the current request's context as the `context` argument. This returns a new context and will **not** affect the request's trace context. Accepts the following arguments:
-    - **`carrier`: `object`** - Object containing the context to be extracted.
-    - **`getter`: [`TextMapGetter`]** - Object containing `get` and `keys` methods. Used to extract values from carrier. Defaults to OpenTelemetry's [`defaultTextMapGetter`].
+- **`activeSpan`: [`Span`]** - The active span (while this is available via `context`, here we just provide a shortcut to it.).
 
-  - **`inject`: [`Propagation.inject`]** - Wraps the propagation API's inject method, and passes in the current request's context as the `context` argument. Accepts the following arguments:
-    - **`carrier`: `object`** - Object the context will be injected into.
-    - **`setter`: [`TextMapSetter`]** - Object containing `set` method. Used to inject values into the carrier. Defaults to OpenTelemetry's [`defaultTextMapSetter`].
+- **`extract`: [`Propagation.extract`]** - Wraps the propagation API's extract method, and passes in the current request's context as the `context` argument. This returns a new context and will **not** affect the request's trace context. Accepts the following arguments:
+  - **`carrier`: `object`** - Object containing the context to be extracted.
+  - **`getter`: [`TextMapGetter`]** - Object containing `get` and `keys` methods. Used to extract values from carrier. Defaults to OpenTelemetry's [`defaultTextMapGetter`].
 
-  - **`tracer`: [`Tracer`]** - The tracer created and used by the plugin.
+- **`inject`: [`Propagation.inject`]** - Wraps the propagation API's inject method, and passes in the current request's context as the `context` argument. Accepts the following arguments:
+  - **`carrier`: `object`** - Object the context will be injected into.
+  - **`setter`: [`TextMapSetter`]** - Object containing `set` method. Used to inject values into the carrier. Defaults to OpenTelemetry's [`defaultTextMapSetter`].
 
-#### Hooks
+- **`tracer`: [`Tracer`]** - The tracer created and used by the plugin.
+
+### Hooks
 
 This plugin registers the following Fastify hooks:
 
- - `onRequest`: Start the span.
+- `onRequest`: Start the span.
 
- - `onReply`: Stop the span.
+- `onReply`: Stop the span.
 
- - `onError`: Add error info to span attributes.
+- `onError`: Add error info to span attributes.
 
- - `onRoute`: Added only if `wrapRoutes` is enabled.
+- `onRoute`: Added only if `wrapRoutes` is enabled.
 
-#### OpenTelemetry Compatibility
+### OpenTelemetry Compatibility
 
 As the [OpenTelemetry API](https://github.com/open-telemetry/opentelemetry-js-api#version-compatibility) uses a
 variable on the `global` object to store the global API, care needs to be taken to ensure all modules are compatible.
