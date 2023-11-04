@@ -14,7 +14,7 @@
     "test": "tap -j1 --show-full-coverage test/*.test.js",
     "tsd": "tsd --files ./test/types/fastify-opentelemetry.test-d.ts",
     "validate": "npm run lint && npm run test && npm run tsd",
-    "prepare": "husky install"
+    "prepare": "node -e \"try { require('husky').install() } catch (e) {if (e.code !== 'MODULE_NOT_FOUND') throw e}\""
   },
   "repository": {
     "type": "git",
