@@ -141,7 +141,7 @@ async function openTelemetryPlugin (fastify, opts = {}) {
 
   if (wrapRoutes) {
     function wrapRoute (routeHandler) {
-      return async function (request, ...args) {
+      return function (request, ...args) {
         const reqContext = getContext(request)
         return context.with(reqContext, routeHandler.bind(this, request, ...args))
       }
