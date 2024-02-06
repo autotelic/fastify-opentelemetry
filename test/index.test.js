@@ -199,10 +199,12 @@ test('should wrap all routes when wrapRoutes is true', async ({ equal, same, tea
 
   await fastify.register(openTelemetryPlugin, { wrapRoutes: true })
 
-  async function testHandlerOne (request, reply) {
+  function testHandlerOne (request, reply) {
     request.openTelemetry()
     reply.headers({ one: 'ok' })
-    return { body: 'one' }
+    setTimeout(() => {
+      reply.send({ body: 'one' })
+    }, 0)
   }
 
   async function testHandlerTwo (request, reply) {
