@@ -92,7 +92,7 @@ The plugin accepts the the following configuration properties:
 
 - **`exposeApi` : `boolean`** - Used to prevent the plugin from decorating the request. By default the request will be decorated (i.e. defaults to `true`).
 
-- **`formatSpanName` : `(FastifyRequest) => string`** - Custom formatter for the span name. The default format is ``` `${req.method} {req.routeOptions.url}` ```.
+- **`formatSpanName` : `(FastifyRequest) => string`** - Custom formatter for the span name. The default format is ``` `${req.method} ${req.routeOptions.url}` ```.
 
 - **`formatSpanAttributes` : `object`** - Contains formatting functions for span attributes. *Properties*:
   - **`request`: `(FastifyRequest) => object`** - On request, the returned object will be added to the current span's attributes. The default request attributes are:
