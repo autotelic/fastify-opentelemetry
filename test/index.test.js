@@ -238,10 +238,16 @@ test('should wrap all routes when wrapRoutes is true', async ({ equal, same, tea
 
 test('should only wrap routes provided in wrapRoutes array', async ({ same, equal, teardown }) => {
   const dummyContext = trace.setSpan(ROOT_CONTEXT, STUB_SPAN)
+  let next
 
   const fastify = require('fastify')()
 
   await fastify.register(openTelemetryPlugin, { wrapRoutes: ['/testTwo'] })
+
+  fastify.addHook('preHandler', (request, reply, done) => {
+    next = done
+    done()
+  })
 
   const testHandlerOne = async () => 'one'
   const testHandlerTwo = async () => 'two'
@@ -257,11 +263,14 @@ test('should only wrap routes provided in wrapRoutes array', async ({ same, equa
   })
 
   await fastify.inject({ ...injectArgs, url: '/testOne' })
+
+  equal(STUB_CONTEXT_API.with.called, false)
+
   await fastify.inject({ ...injectArgs, url: '/testTwo' })
 
   equal(STUB_CONTEXT_API.with.calledOnce, true)
   same(STUB_CONTEXT_API.with.args[0][0], dummyContext)
-  same(await STUB_CONTEXT_API.with.args[0][1](), await testHandlerTwo())
+  same(STUB_CONTEXT_API.with.args[0][1], next)
 })
 
 test('should ignore routes found in ignoreRoutes array', async ({ equal, same, teardown }) => {
