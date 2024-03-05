@@ -110,6 +110,17 @@ async function openTelemetryPlugin (fastify, opts = {}) {
     contextMap.set(request, trace.setSpan(activeContext, span))
   }
 
+  function onRequestWrapRoutes (request, reply, done) {
+    if (
+      !shouldIgnoreRoute(request.url, request.method) &&
+      (wrapRoutes === true || (Array.isArray(wrapRoutes) && wrapRoutes.includes(request.url)))
+    ) {
+      context.with(getContext(request), done)
+    } else {
+      done()
+    }
+  }
+
   async function onResponse (request, reply) {
     if (shouldIgnoreRoute(request.url, request.method)) return
 
@@ -136,28 +147,9 @@ async function openTelemetryPlugin (fastify, opts = {}) {
   }
 
   fastify.addHook('onRequest', onRequest)
+  if (wrapRoutes) fastify.addHook('onRequest', onRequestWrapRoutes)
   fastify.addHook('onResponse', onResponse)
   fastify.addHook('onError', onError)
-
-  if (wrapRoutes) {
-    function wrapRoute (routeHandler) {
-      return function (request, ...args) {
-        const reqContext = getContext(request)
-        return context.with(reqContext, routeHandler.bind(this, request, ...args))
-      }
-    }
-
-    fastify.addHook('onRoute', function (routeOpts) {
-      const { path, handler, method } = routeOpts
-      if (!shouldIgnoreRoute(path, method)) {
-        if (wrapRoutes === true) {
-          routeOpts.handler = wrapRoute(handler)
-        } else if (Array.isArray(wrapRoutes) && wrapRoutes.includes(path)) {
-          routeOpts.handler = wrapRoute(handler)
-        }
-      }
-    })
-  }
 }
 
 module.exports = fp(openTelemetryPlugin, {
