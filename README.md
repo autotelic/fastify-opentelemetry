@@ -134,6 +134,8 @@ The plugin accepts the the following configuration properties:
 
   - The ignored routes will still have access to `request.openTelemetry`, but `activeSpan` will be `undefined`.
 
+- **`propagateToReply` : `boolean`** - When `true`, the current span context will be injected into the reply headers using your registered propagators. Defaults to `false`.
+
 ### Request Decorator
 
 This plugin decorates the request with an `openTelemetry` function that returns an object with the following properties:
@@ -163,6 +165,8 @@ This plugin registers the following Fastify hooks:
 - `onError`: Add error info to span attributes.
 
 - `onRoute`: Added only if `wrapRoutes` is enabled.
+
+- `onSend`: Added only if `propagateToReply` is enabled.
 
 ### OpenTelemetry Compatibility
 

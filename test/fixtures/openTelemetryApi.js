@@ -5,6 +5,17 @@ const {
   propagation,
   trace
 } = require('@opentelemetry/api')
+const {
+  BasicTracerProvider,
+  ConsoleSpanExporter,
+  SimpleSpanProcessor
+} = require('@opentelemetry/sdk-trace-base')
+const { W3CTraceContextPropagator } = require('@opentelemetry/core')
+
+const provider = new BasicTracerProvider()
+const exporter = new ConsoleSpanExporter()
+provider.addSpanProcessor(new SimpleSpanProcessor(exporter))
+provider.register({ propagator: new W3CTraceContextPropagator() })
 
 const { name: moduleName, version: moduleVersion } = require('../../package.json')
 

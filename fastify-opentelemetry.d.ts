@@ -35,6 +35,7 @@ declare namespace fastifyOpenTelemetry {
     },
     wrapRoutes?: boolean | string[],
     ignoreRoutes?: string[] | ((path: string, method: string) => boolean),
+    propagateToReply?: boolean,
   }
 
   export const fastifyOpenTelemetry: FastifyPluginCallback<OpenTelemetryPluginOptions>
