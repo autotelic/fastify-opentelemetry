@@ -463,3 +463,29 @@ test('should use request.routerPath if request.routeOptions does not exist', asy
     'should not contain router path when no matching routes found'
   )
 })
+
+test('add propagation headers to reply when propagateToReply is true', async ({ same, teardown }) => {
+  const fastify = require('fastify')()
+
+  await fastify.register(openTelemetryPlugin, { wrapRoutes: true, propagateToReply: true })
+
+  async function testHandler (request, reply) {
+    const { activeSpan } = request.openTelemetry()
+    reply.headers({ one: 'ok' })
+    return { body: activeSpan.spanContext() }
+  }
+
+  fastify.get('/test', testHandler)
+
+  await fastify.ready()
+
+  teardown(() => {
+    resetHistory()
+    fastify.close()
+  })
+
+  const res = await fastify.inject({ ...injectArgs, url: '/test' })
+  const spanContext = res.json().body
+  same(res.statusCode, 200)
+  same(res.headers.traceparent, `00-${spanContext.traceId}-${spanContext.spanId}-0${spanContext.traceFlags}`)
+})

@@ -47,7 +47,8 @@ async function openTelemetryPlugin (fastify, opts = {}) {
     wrapRoutes,
     exposeApi = true,
     formatSpanName = defaultFormatSpanName,
-    ignoreRoutes = []
+    ignoreRoutes = [],
+    propagateToReply = false
   } = opts
 
   const shouldIgnoreRoute = typeof ignoreRoutes === 'function'
@@ -146,10 +147,19 @@ async function openTelemetryPlugin (fastify, opts = {}) {
     span.setAttributes(formatSpanAttributes.error(error))
   }
 
+  async function onSend (request, reply, payload) {
+    const { inject } = request.openTelemetry()
+    const propagationHeaders = {}
+    inject(propagationHeaders)
+    reply.headers(propagationHeaders)
+    return payload
+  };
+
   fastify.addHook('onRequest', onRequest)
   if (wrapRoutes) fastify.addHook('onRequest', onRequestWrapRoutes)
   fastify.addHook('onResponse', onResponse)
   fastify.addHook('onError', onError)
+  if (propagateToReply) fastify.addHook('onSend', onSend)
 }
 
 module.exports = fp(openTelemetryPlugin, {
