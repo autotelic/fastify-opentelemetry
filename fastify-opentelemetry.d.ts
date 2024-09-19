@@ -1,4 +1,4 @@
-import { FastifyPluginCallback, FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify'
 import { Context, Span, Attributes, TextMapGetter, TextMapSetter, Tracer } from '@opentelemetry/api'
 
 /**
@@ -38,7 +38,7 @@ declare namespace fastifyOpenTelemetry {
     propagateToReply?: boolean,
   }
 
-  export const fastifyOpenTelemetry: FastifyPluginCallback<OpenTelemetryPluginOptions>
+  export const fastifyOpenTelemetry: FastifyPluginAsync<OpenTelemetryPluginOptions>
 
   export { fastifyOpenTelemetry as default }
 }

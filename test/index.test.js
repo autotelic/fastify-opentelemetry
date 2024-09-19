@@ -401,42 +401,8 @@ test('should preserve this binding in handler using wrapRoutes', async ({ equal,
   })
 })
 
-test('should use router path in span name', async ({ same, teardown }) => {
+test('should use request.routerOptions.url in defaultFormatSpanName', async ({ same, teardown }) => {
   const fastify = await setupTest({})
-
-  const activeContext = stub(context, 'active').returns({
-    getValue: () => STUB_SPAN,
-    setValue: () => null
-  })
-
-  teardown(() => {
-    activeContext.restore()
-    resetHistory()
-    fastify.close()
-  })
-
-  await fastify.inject(injectArgs)
-  await fastify.inject({ ...injectArgs, url: '/invalid' })
-
-  same(
-    STUB_TRACER.startSpan.args[0][0],
-    'GET /test',
-    'should contain router path'
-  )
-  same(
-    STUB_TRACER.startSpan.args[1][0],
-    'GET',
-    'should not contain router path when no matching routes found'
-  )
-})
-
-test('should use request.routerPath if request.routeOptions does not exist', async ({ same, teardown }) => {
-  const fastify = await setupTest({})
-  fastify.decorateRequest('routeOptions', {
-    getter () {
-      return undefined
-    }
-  })
 
   const activeContext = stub(context, 'active').returns({
     getValue: () => STUB_SPAN,

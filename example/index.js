@@ -19,34 +19,10 @@ const start = async () => {
       const activityRes = await fetch(`${boredApi}/api/activity`)
       // Spans started in a wrapped route will automatically be children of the activeSpan.
       childSpan = tracer.startSpan('preparing content')
-      const { activity } = await activityRes.json()
-      reply.type('text/html')
-      return `<h1>Bored?</h1><h3>Have you tried to ${activity.toLowerCase()}</h3>`
-    } catch (error) {
-      // fastify-opentelemetry automatically adds error data to the parent spans attributes.
-      return error
-    } finally {
-      // Always be sure to end child spans.
-      if (childSpan) childSpan.end()
-    }
-  })
-
-  fastify.get('/:type', async function routeHandler (request, reply) {
-    const { tracer } = request.openTelemetry()
-    let childSpan
-    try {
-      // @opentelemetry/instrumentation-http will automatically trace incoming and out going http/https requests.
-      const activityRes = await fetch(
-        `${boredApi}/api/activity?type=${request.params.type}`
-      )
-      // Spans started in a wrapped route will automatically be children of the activeSpan.
-      childSpan = tracer.startSpan(`preparing content of ${request.params.type}`)
-      const { activity, error } = await activityRes.json()
-
-      if (error) {
-        throw error
+      if (!activityRes.ok) {
+        throw Error('Something went wrong...')
       }
-
+      const { activity } = await activityRes.json()
       reply.type('text/html')
       return `<h1>Bored?</h1><h3>Have you tried to ${activity.toLowerCase()}</h3>`
     } catch (error) {
