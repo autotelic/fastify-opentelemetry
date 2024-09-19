@@ -35,7 +35,7 @@
   },
   "homepage": "https://github.com/autotelic/fastify-opentelemetry#readme",
   "engines": {
-    "node": ">=14"
+    "node": ">=18"
   },
   "devDependencies": {
     "@opentelemetry/api": "^1.0.0",
@@ -51,7 +51,7 @@
     "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-n": "^16.2.0",
     "eslint-plugin-promise": "^6.1.1",
-    "fastify": "^4.0.0",
+    "fastify": "^5.0.0",
     "husky": "^8.0.3",
     "lint-staged": "^15.0.2",
     "sinon": "^17.0.1",
@@ -63,7 +63,7 @@
     "@opentelemetry/api": "^1.0.0"
   },
   "dependencies": {
-    "fastify-plugin": "^4.0.0"
+    "fastify-plugin": "^5.0.0"
   },
   "lint-staged": {
     "*.{js,ts}": [

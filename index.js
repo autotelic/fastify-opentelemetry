@@ -11,14 +11,7 @@ const {
 const { name: moduleName, version: moduleVersion } = require('./package.json')
 
 function defaultFormatSpanName (request) {
-  const { method } = request
-  let path
-  if (request.routeOptions) {
-    path = request.routeOptions.url
-  } else {
-    path = request.routerPath
-  }
-  return path ? `${method} ${path}` : method
+  return `${request.method} ${request.routeOptions.url || ''}`.trim()
 }
 
 const defaultFormatSpanAttributes = {
@@ -163,6 +156,6 @@ async function openTelemetryPlugin (fastify, opts = {}) {
 }
 
 module.exports = fp(openTelemetryPlugin, {
-  fastify: '4.x',
+  fastify: '4.10.x - 5.x',
   name: 'fastify-opentelemetry'
 })

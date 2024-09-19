@@ -35,7 +35,7 @@ expectType(<OpenTelemetryPluginOptions>({
     },
     reply: reply => {
       return {
-        responseTime: reply.getResponseTime()
+        responseTime: reply.elapsedTime
       }
     },
     error: error => {
