@@ -136,6 +136,8 @@ The plugin accepts the the following configuration properties:
 
 - **`propagateToReply` : `boolean`** - When `true`, the current span context will be injected into the reply headers using your registered propagators. Defaults to `false`.
 
+- **`spanOptions` : `SpanOptions | (FastifyRequest) => SpanOptions`** - [`SpanOptions`] or a function that returns [`SpanOptions`]. These will be passed into `tracer.startSpan` on each request. Defaults to `{ kind: 1 }`.
+
 ### Request Decorator
 
 This plugin decorates the request with an `openTelemetry` function that returns an object with the following properties:
@@ -202,3 +204,4 @@ Each version of the OpenTelemetry API will require a specific release of fastify
 [`defaultTextMapSetter`]: https://open-telemetry.github.io/opentelemetry-js/globals.html#defaulttextmapsetter
 [OpenTelemetry instrumentations]: https://github.com/open-telemetry/opentelemetry-js#node-instrumentations--plugins
 [`AsyncHooksContextManager`]: https://github.com/open-telemetry/opentelemetry-js/tree/main/packages/opentelemetry-context-async-hooks
+[`SpanOptions`]: https://github.com/open-telemetry/opentelemetry-js/blob/main/api/src/trace/SpanOptions.ts

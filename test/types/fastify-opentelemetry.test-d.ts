@@ -44,6 +44,7 @@ expectType(<OpenTelemetryPluginOptions>({
       }
     }
   },
+  spanOptions: () => ({ kind: 1 }),
   ignoreRoutes: (path: string, method: string) => method === 'OPTIONS',
   formatSpanName: (request: FastifyRequest) => `${request.method} constant-part`,
   wrapRoutes: true,
