@@ -5,7 +5,8 @@ const {
   defaultTextMapSetter,
   propagation,
   SpanStatusCode,
-  trace
+  trace,
+  SpanKind
 } = require('@opentelemetry/api')
 
 const { name: moduleName, version: moduleVersion } = require('./package.json')
@@ -35,13 +36,16 @@ const defaultFormatSpanAttributes = {
   }
 }
 
+const defaultSpanOptions = { kind: SpanKind.SERVER }
+
 async function openTelemetryPlugin (fastify, opts = {}) {
   const {
     wrapRoutes,
     exposeApi = true,
     formatSpanName = defaultFormatSpanName,
     ignoreRoutes = [],
-    propagateToReply = false
+    propagateToReply = false,
+    spanOptions = defaultSpanOptions
   } = opts
 
   const shouldIgnoreRoute = typeof ignoreRoutes === 'function'
@@ -95,9 +99,11 @@ async function openTelemetryPlugin (fastify, opts = {}) {
       activeContext = propagation.extract(activeContext, request.headers)
     }
 
+    const reqSpanOpts = typeof spanOptions === 'function' ? spanOptions(request) : spanOptions
+
     const span = tracer.startSpan(
       formatSpanName(request),
-      {},
+      reqSpanOpts,
       activeContext
     )
     span.setAttributes(formatSpanAttributes.request(request))

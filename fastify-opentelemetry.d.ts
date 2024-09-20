@@ -1,5 +1,5 @@
 import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify'
-import { Context, Span, Attributes, TextMapGetter, TextMapSetter, Tracer } from '@opentelemetry/api'
+import { Context, Span, Attributes, TextMapGetter, TextMapSetter, Tracer, SpanOptions } from '@opentelemetry/api'
 
 /**
  * Object exposed as part of the "openTelemetry" object on the fastify request.
@@ -33,6 +33,7 @@ declare namespace fastifyOpenTelemetry {
       reply?: (reply: FastifyReply) => Attributes,
       error?: (error: Error) => Attributes,
     },
+    spanOptions?: SpanOptions | ((request: FastifyRequest) => SpanOptions)
     wrapRoutes?: boolean | string[],
     ignoreRoutes?: string[] | ((path: string, method: string) => boolean),
     propagateToReply?: boolean,

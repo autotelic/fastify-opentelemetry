@@ -6,7 +6,8 @@ const {
   defaultTextMapSetter,
   ROOT_CONTEXT,
   SpanStatusCode,
-  trace
+  trace,
+  SpanKind
 } = require('@opentelemetry/api')
 
 const {
@@ -454,4 +455,47 @@ test('add propagation headers to reply when propagateToReply is true', async ({ 
   const spanContext = res.json().body
   same(res.statusCode, 200)
   same(res.headers.traceparent, `00-${spanContext.traceId}-${spanContext.spanId}-0${spanContext.traceFlags}`)
+})
+
+test('use default spanOptions when none provided', async ({ same, teardown }) => {
+  const fastify = await setupTest({})
+
+  teardown(() => {
+    resetHistory()
+    fastify.close()
+  })
+
+  await fastify.inject(injectArgs)
+
+  same(STUB_TRACER.startSpan.args[0][1], { kind: SpanKind.SERVER })
+})
+
+test('use spanOptions object when provided', async ({ same, teardown }) => {
+  const fastify = await setupTest({ spanOptions: { kind: SpanKind.CLIENT } })
+
+  teardown(() => {
+    resetHistory()
+    fastify.close()
+  })
+
+  await fastify.inject(injectArgs)
+
+  same(STUB_TRACER.startSpan.args[0][1], { kind: SpanKind.CLIENT })
+})
+
+test('use spanOptions function when provided', async ({ same, teardown }) => {
+  const fastify = await setupTest({
+    spanOptions: (request) => ({
+      kind: request.url === '/test' ? SpanKind.PRODUCER : SpanKind.CONSUMER
+    })
+  })
+
+  teardown(() => {
+    resetHistory()
+    fastify.close()
+  })
+
+  await fastify.inject(injectArgs)
+
+  same(STUB_TRACER.startSpan.args[0][1], { kind: SpanKind.PRODUCER })
 })
