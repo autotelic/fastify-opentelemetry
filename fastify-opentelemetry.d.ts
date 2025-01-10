@@ -12,6 +12,8 @@ type ReqInstance = {
   extract: <Carrier> (carrier: Carrier, getter?: TextMapGetter) => Context,
 }
 
+type FastifyOpenTelemetry = FastifyPluginAsync<fastifyOpenTelemetry.OpenTelemetryPluginOptions>
+
 declare module 'fastify' {
   interface FastifyRequest {
     openTelemetry: () => ReqInstance
@@ -39,9 +41,11 @@ declare namespace fastifyOpenTelemetry {
     propagateToReply?: boolean,
   }
 
-  export const fastifyOpenTelemetry: FastifyPluginAsync<OpenTelemetryPluginOptions>
+  export const fastifyOpenTelemetry: FastifyOpenTelemetry
 
   export { fastifyOpenTelemetry as default }
 }
+
+declare function fastifyOpenTelemetry(...params: Parameters<FastifyOpenTelemetry>): ReturnType<FastifyOpenTelemetry>
 
 export = fastifyOpenTelemetry
