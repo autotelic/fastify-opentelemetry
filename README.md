@@ -172,7 +172,7 @@ This plugin registers the following Fastify hooks:
 
 ### OpenTelemetry Compatibility
 
-As the [OpenTelemetry API](https://github.com/open-telemetry/opentelemetry-js-api#version-compatibility) uses a
+As the [OpenTelemetry API](https://github.com/open-telemetry/opentelemetry-js/tree/main/api#version-compatibility) uses a
 variable on the `global` object to store the global API, care needs to be taken to ensure all modules are compatible.
 
 Each version of the OpenTelemetry API will require a specific release of fastify-opentelemetry.
