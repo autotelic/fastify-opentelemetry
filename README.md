@@ -172,7 +172,7 @@ This plugin registers the following Fastify hooks:
 
 ### OpenTelemetry Compatibility
 
-As the [OpenTelemetry API](https://github.com/open-telemetry/opentelemetry-js-api#version-compatibility) uses a
+As the [OpenTelemetry API](https://github.com/open-telemetry/opentelemetry-js/tree/main/api#version-compatibility) uses a
 variable on the `global` object to store the global API, care needs to be taken to ensure all modules are compatible.
 
 Each version of the OpenTelemetry API will require a specific release of fastify-opentelemetry.
@@ -192,16 +192,16 @@ Each version of the OpenTelemetry API will require a specific release of fastify
 | `@opentelemetry/api@0.9.0`      |  `@autotelic/fastify-opentelemetry@0.1.1`  |
 
 [Fastify]: https://fastify.io
-[OpenTelemetry API]: https://github.com/open-telemetry/opentelemetry-js-api
-[`Context`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/context.html
-[`Propagation.extract`]: https://open-telemetry.github.io/opentelemetry-js/classes/propagationapi.html#extract
-[`Propagation.inject`]: https://open-telemetry.github.io/opentelemetry-js/classes/propagationapi.html#inject
-[`Span`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/span.html
-[`Tracer`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/tracer.html
-[`TextMapGetter`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/textmapgetter.html
-[`defaultTextMapGetter`]: https://open-telemetry.github.io/opentelemetry-js/globals.html#defaulttextmapgetter
-[`TextMapSetter`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/textmapsetter.html
-[`defaultTextMapSetter`]: https://open-telemetry.github.io/opentelemetry-js/globals.html#defaulttextmapsetter
-[OpenTelemetry instrumentations]: https://github.com/open-telemetry/opentelemetry-js#node-instrumentations--plugins
+[OpenTelemetry API]: https://github.com/open-telemetry/opentelemetry-js/tree/main/api
+[`Context`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/_opentelemetry_api.Context.html
+[`Propagation.extract`]: https://open-telemetry.github.io/opentelemetry-js/classes/_opentelemetry_api.PropagationAPI.html#extract
+[`Propagation.inject`]: https://open-telemetry.github.io/opentelemetry-js/classes/_opentelemetry_api.PropagationAPI.html#inject
+[`Span`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/_opentelemetry_api.Span.html
+[`Tracer`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/_opentelemetry_api.Tracer.html
+[`TextMapGetter`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/_opentelemetry_api.TextMapGetter.html
+[`defaultTextMapGetter`]: https://open-telemetry.github.io/opentelemetry-js/modules/_opentelemetry_api.html#defaultTextMapGetter
+[`TextMapSetter`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/_opentelemetry_api.TextMapSetter.html
+[`defaultTextMapSetter`]: https://open-telemetry.github.io/opentelemetry-js/modules/_opentelemetry_api.html#defaultTextMapSetter
+[OpenTelemetry instrumentations]: https://github.com/open-telemetry/opentelemetry-js#node-instrumentations
 [`AsyncHooksContextManager`]: https://github.com/open-telemetry/opentelemetry-js/tree/main/packages/opentelemetry-context-async-hooks
-[`SpanOptions`]: https://github.com/open-telemetry/opentelemetry-js/blob/main/api/src/trace/SpanOptions.ts
+[`SpanOptions`]: https://open-telemetry.github.io/opentelemetry-js/interfaces/_opentelemetry_api.SpanOptions.html
