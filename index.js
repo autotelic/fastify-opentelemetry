@@ -128,7 +128,7 @@ async function openTelemetryPlugin (fastify, opts = {}) {
     const span = trace.getSpan(activeContext)
     const spanStatus = { code: SpanStatusCode.OK }
 
-    if (reply.statusCode >= 400) {
+    if (reply.statusCode >= 500) {
       spanStatus.code = SpanStatusCode.ERROR
     }
 
